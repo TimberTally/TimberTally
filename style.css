@@ -1,0 +1,436 @@
+/* --- START OF FILE style.css --- */
+
+body {
+    font-family: sans-serif;
+    line-height: 1.5;
+    margin: 10px;
+    background-color: #f4f4f4;
+    font-size: 15px;
+    touch-action: manipulation; /* Prevents double-tap zoom on touch devices */
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    font-size: 1.6em;
+}
+
+/* Sections for main entry view */
+#entryView .input-section,
+#entryView .button-section,
+#entryView .output-section {
+    background-color: #fff;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#entryView .output-section {
+    position: relative;
+    padding-right: 110px; /* Space for delete button */
+    min-height: 100px;
+}
+
+#entryView .input-group {
+    margin-bottom: 12px;
+}
+
+label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: bold;
+    color: #555;
+    font-size: 0.95em;
+}
+
+label.inline-label {
+    display: inline-block;
+    margin-bottom: 0;
+    margin-right: 5px;
+    font-weight: normal;
+}
+
+select, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em;
+    font-family: inherit;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 40px;
+}
+
+/* *** ADDED: Plot Number Section Styles *** */
+.plot-number-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px; /* Space below plot number */
+    padding-bottom: 10px; /* Optional: add some padding below */
+    border-bottom: 1px solid #eee; /* Optional: visual separator */
+    gap: 10px; /* Space between label and counter group */
+}
+
+.plot-number-label {
+    font-weight: bold;
+    color: #555;
+    font-size: 1em; /* Match other labels */
+    margin-bottom: 0; /* Override default label margin */
+    flex-shrink: 0; /* Prevent label from shrinking */
+}
+
+/* Ensure plot counter group fits well here */
+.plot-counter-group {
+    /* Existing styles should work, adjust if needed */
+    margin: 0; /* Remove extra margin if added previously */
+    display: flex; /* Ensure flex display if not already inherited */
+    align-items: center; /* Ensure vertical alignment */
+    gap: 8px; /* Ensure spacing */
+}
+
+/* Plot Number Counter Button Styles (ensure they are defined) */
+.plot-counter-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 1.2em;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+}
+.plot-counter-btn:hover { background-color: #5a6268; }
+.plot-counter-btn:disabled { background-color: #cccccc; cursor: not-allowed; opacity: 0.7; }
+
+#plotNumberDisplay {
+    font-size: 1.1em;
+    font-weight: bold;
+    min-width: 25px;
+    text-align: center;
+    padding: 5px 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    margin: 0;
+}
+/* *** END Plot Number Section Styles *** */
+
+
+/* Condensed Input Row Styles (Plot counter removed from here) */
+.input-row-condensed {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    border-top: 1px solid #eee;
+    justify-content: space-between; /* Adjust alignment as needed */
+}
+
+/* Cut Checkbox Styles */
+.cut-checkbox-group {
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+.cut-checkbox-group input[type="checkbox"] {
+    margin-right: 6px;
+    width: auto;
+    height: auto;
+    box-sizing: content-box;
+    transform: scale(1.2);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.cut-checkbox-group label {
+    margin-bottom: 0;
+    font-weight: normal;
+    display: inline-block;
+    flex-basis: auto;
+    flex-grow: 0;
+    font-size: 1em;
+    color: #333;
+    cursor: pointer;
+}
+
+/* Location Group Styles */
+.location-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1; /* Allow it to take available space */
+    min-width: 150px; /* Ensure it has some minimum width */
+}
+#getLocationBtn {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 0.9em;
+}
+#locationStatus {
+    font-size: 0.85em;
+    color: #555;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+    background-color: #f8f9fa;
+    padding: 4px 6px;
+    border-radius: 3px;
+    border: 1px solid #eee;
+}
+
+/* Button Section (Submit, Save, Tally) */
+.button-section {
+    text-align: center;
+    padding: 10px 15px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    /* Ensure background if outside main sections */
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.2s ease;
+    vertical-align: middle;
+}
+button:hover { background-color: #0056b3; }
+button:disabled { background-color: #cccccc; cursor: not-allowed; }
+
+#viewTallyBtn { background-color: #ffc107; color: #333; } /* Yellow for Tally */
+#viewTallyBtn:hover { background-color: #e0a800; }
+#viewTallyBtn:disabled { background-color: #ffeeba; }
+
+#backToEntryBtn { background-color: #6c757d; } /* Grey for Back */
+#backToEntryBtn:hover { background-color: #5a6268; }
+
+
+/* Output Section (Recent Entries List) */
+#entryView .output-section h2 {
+    color: #333;
+    text-align: center;
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.delete-button { /* Style for "Delete Selected" */
+    background-color: #dc3545;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 0.9em;
+}
+.delete-button:hover { background-color: #c82333; }
+.delete-button:disabled { background-color: #e07e87; }
+
+#entriesList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 5px;
+    border-radius: 4px;
+}
+#entriesList li {
+    background-color: #e9ecef;
+    margin-bottom: 5px;
+    padding: 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-start; /* Align checkbox with top of text */
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+#entriesList li input[type="checkbox"] {
+    margin-right: 8px;
+    flex-shrink: 0;
+    transform: scale(1.1);
+    margin-top: 3px; /* Fine-tune vertical alignment */
+}
+#entriesList li .entry-details { flex-grow: 1; }
+#entriesList li .entry-details .detail-label { font-weight: bold; color: #555; }
+#entriesList li .entry-details .detail-value { color: #333; }
+#entriesList li .entry-details > div { margin-bottom: 2px; } /* Tighter spacing */
+
+#noEntriesMsg {
+    color: #6c757d;
+    font-style: italic;
+    border: none;
+    background-color: transparent;
+    text-align: center;
+    padding: 8px;
+    margin: 0;
+    font-size: 0.9em;
+}
+
+/* Feedback Message */
+.feedback-message {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 0.95em;
+    display: none;
+    transition: opacity 0.5s ease-in-out;
+    opacity: 0; /* Start hidden */
+}
+.feedback-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+
+/* --- Tally View Styles --- */
+#tallyView .tally-section {
+    background-color: #fff;
+    padding: 20px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#tallyView h1 { /* Ensure tally view h1 is styled if needed */
+    color: #333;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    font-size: 1.6em;
+}
+
+
+#tallyView h2 {
+    text-align: center;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+#tallyResults {
+    max-height: 60vh; /* Limit height and allow scrolling */
+    overflow-y: auto;
+    padding: 5px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #f8f9fa; /* Light background for results area */
+}
+
+#tallyResults .tally-species {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #ccc;
+}
+#tallyResults .tally-species:last-child {
+    border-bottom: none; /* Remove border from last species */
+    margin-bottom: 0;
+}
+
+
+#tallyResults h3 { /* Species Name */
+    font-size: 1.15em;
+    color: #0056b3; /* Darker blue */
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+#tallyResults h4 { /* DBH Value */
+    font-size: 1.05em;
+    color: #444;
+    margin-top: 0;
+    margin-bottom: 5px;
+    padding-left: 15px; /* Indent DBH */
+}
+
+#tallyResults .tally-log-item { /* Log + Count */
+    font-size: 0.95em;
+    color: #555;
+    margin-bottom: 3px;
+    padding-left: 30px; /* Further indent Logs */
+}
+
+#tallyResults .tally-log-item .log-label {
+    font-weight: normal;
+}
+
+#tallyResults .tally-log-item .log-count {
+    font-weight: bold;
+    color: #155724; /* Green for count */
+}
+
+#tallyResults .no-tally-data {
+    color: #6c757d;
+    font-style: italic;
+    text-align: center;
+    padding: 15px;
+}
+
+/* *** ADDED: Delete All Button Section Styles *** */
+.delete-all-section {
+    text-align: center;
+    margin-top: 20px; /* Space above the delete all button */
+    margin-bottom: 15px; /* Space below the delete all button */
+    padding: 10px;
+    /* This section is outside the white boxes, so no background needed unless desired */
+}
+
+.delete-all-button {
+    background-color: #dc3545; /* Red background */
+    color: white;
+    border: none;
+    padding: 10px 20px; /* Make it slightly larger */
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+.delete-all-button:hover {
+    background-color: #c82333; /* Darker red on hover */
+}
+.delete-all-button:disabled {
+    background-color: #e07e87; /* Lighter red when disabled */
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+/* *** END Delete All Button Section Styles *** */
+
+
+/* --- END OF FILE style.css --- */
