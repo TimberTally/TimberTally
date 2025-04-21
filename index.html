@@ -14,7 +14,7 @@
         <h1>TimberTally</h1>
 
         <div class="input-section">
-            <!-- *** MOVED & ADDED: Plot Number Counter Section *** -->
+            <!-- Plot Number Counter Section -->
             <div class="plot-number-section">
                 <label for="plotNumberDisplay" class="plot-number-label">Plot #:</label>
                 <div class="plot-counter-group">
@@ -23,59 +23,34 @@
                     <button type="button" id="plotIncrementBtn" class="plot-counter-btn" title="Increment Plot Number">+</button>
                 </div>
             </div>
-            <!-- *** END Plot Number Counter Section *** -->
-
             <!-- Species -->
             <div class="input-group">
                 <label for="speciesSelect">Species:</label>
                 <select id="speciesSelect">
-                    <option value="White Oak">White Oak</option>
-                    <option value="Red Oak">Red Oak</option>
-                    <option value="Yellow-poplar">Yellow-poplar</option>
-                    <option value="Hickory">Hickory</option>
-                    <option value="Maple">Maple</option>
-                    <option value="Black Walnut">Black Walnut</option>
-                    <option value="Beech">Beech</option>
-                    <option value="Eastern redcedar">Eastern redcedar</option>
-                    <option value="Elm">Elm</option>
-                    <option value="Ash">Ash</option>
-                    <option value="Black Cherry">Black Cherry</option>
-                    <option value="Hackberry">Hackberry</option>
-                    <option value="Gum">Gum</option>
-                    <option value="MISC">MISC</option>
-                    <option value="Other 1">Other 1</option>
-                    <option value="Other 2">Other 2</option>
-                    <option value="Other 3">Other 3</option>
+                    <!-- Options populated by JavaScript -->
                 </select>
             </div>
-
             <!-- DBH -->
             <div class="input-group">
                 <label for="dbhSelect">DBH:</label>
                 <select id="dbhSelect"></select>
             </div>
-
             <!-- Logs -->
             <div class="input-group">
                 <label for="logsSelect">Logs:</label>
                 <select id="logsSelect"></select>
             </div>
-
-             <!-- Condensed Row for Cut, Location (Plot Removed) -->
+             <!-- Condensed Row -->
             <div class="input-row-condensed">
-                 <!-- *** REMOVED Plot Counter Group from here *** -->
-                <!-- Cut Checkbox -->
                 <div class="cut-checkbox-group">
                     <input type="checkbox" id="cutCheckbox" name="cutStatus">
                     <label for="cutCheckbox">Cut</label>
                 </div>
-                <!-- GPS Location -->
                 <div class="location-group">
                     <button type="button" id="getLocationBtn" title="Get GPS Location">Get Location</button>
                     <span id="locationStatus" title="GPS Status">Location not set</span>
                 </div>
             </div>
-
             <!-- Notes Textarea -->
             <div class="input-group">
                 <label for="notesTextarea">Notes:</label>
@@ -92,21 +67,66 @@
         <!-- Feedback Message Area -->
         <div id="feedbackMsg" class="feedback-message"></div>
 
+        <!-- === Recent Entries Table === -->
         <div class="output-section">
             <h2>Recent Entries (<span id="entryCount">0</span>)</h2>
             <div class="delete-button-container">
                 <button id="deleteBtn" class="delete-button" disabled>Delete Selected</button>
             </div>
-            <ul id="entriesList">
-                <li id="noEntriesMsg">No data submitted yet.</li>
-            </ul>
+            <div class="table-container"> <!-- Added container for scrolling -->
+                <table id="entriesTable">
+                    <thead>
+                        <tr>
+                            <th><!-- Checkbox --></th>
+                            <th>Plot</th>
+                            <th>Species</th>
+                            <th>DBH</th>
+                            <th>Logs</th>
+                            <th>Cut</th>
+                        </tr>
+                    </thead>
+                    <tbody id="entriesTableBody">
+                        <!-- Data rows will be inserted here by JS -->
+                        <tr id="noEntriesRow">
+                             <td colspan="6">No data submitted yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- === END Recent Entries Table === -->
+
+
+        <!-- === Collapsible Species Management Section Trigger === -->
+        <div class="toggle-section">
+            <button id="toggleSpeciesMgmtBtn" class="toggle-button" aria-expanded="false" aria-controls="speciesManagementSection">
+                Show Species Management ▼ <!-- Down arrow -->
+            </button>
         </div>
 
-        <!-- *** ADDED: Delete All Button Section *** -->
+        <!-- === Species Management Section (Initially Hidden) === -->
+        <div id="speciesManagementSection" class="input-section collapsible-section" hidden> <!-- Start hidden -->
+            <h2>Manage Species</h2>
+            <div class="species-add-group">
+                <label for="newSpeciesInput">Add New Species:</label>
+                <div class="input-with-button">
+                    <input type="text" id="newSpeciesInput" placeholder="Enter species name">
+                    <button id="addSpeciesBtn" title="Add Species to List">+</button>
+                </div>
+            </div>
+            <div class="species-remove-group">
+                <label for="removeSpeciesSelect">Select Species to Remove:</label>
+                <select id="removeSpeciesSelect" multiple size="6"></select>
+                <button id="removeSpeciesBtn">Remove Selected</button>
+            </div>
+            <div id="speciesMgmtFeedback" class="feedback-message" style="margin-top: 10px;"></div>
+        </div>
+        <!-- === END Species Management Section === -->
+
+        <!-- Delete All Button Section -->
         <div class="delete-all-section">
             <button id="deleteAllBtn" class="delete-all-button" disabled>Delete All Data</button>
         </div>
-        <!-- *** END Delete All Button Section *** -->
 
     </div> <!-- End of entryView -->
 
@@ -114,9 +134,8 @@
     <div id="tallyView" style="display: none;">
         <h1>Data Tally</h1>
         <div class="tally-section">
-             <h2>Tally by Species, DBH, Logs</h2>
+             <h2>Tally by Species, DBH, Logs, Cut Status</h2> <!-- Updated Tally Title -->
              <div id="tallyResults">
-                 <!-- Tally results will be inserted here by JS -->
                  <p>Calculating tally...</p>
              </div>
              <div class="button-section">
@@ -125,8 +144,25 @@
         </div>
     </div> <!-- End of tallyView -->
 
+    <!-- === Form Class Selection Modal (Initially Hidden) === -->
+    <div id="fcPromptModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Select Doyle Form Class</h2>
+            <p>Choose the Form Class to use for volume calculations in the report:</p>
+            <div class="fc-options">
+                <label><input type="radio" name="formClass" value="72" checked> FC 72</label>
+                <label><input type="radio" name="formClass" value="74"> FC 74</label>
+                <label><input type="radio" name="formClass" value="76"> FC 76</label>
+                <label><input type="radio" name="formClass" value="78"> FC 78</label>
+            </div>
+            <div class="modal-buttons">
+                <button id="confirmFcBtn">Confirm & Save CSV</button>
+                <button id="cancelFcBtn" type="button">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <!-- === END Form Class Selection Modal === -->
 
-    <!-- Link to JavaScript file -->
     <script src="script.js" defer></script>
 </body>
 </html>
