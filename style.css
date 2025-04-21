@@ -31,7 +31,7 @@ h1 {
 #entryView .output-section {
     position: relative;
     padding-right: 110px; /* Space for delete button */
-    min-height: 100px;
+    /* Removed min-height, table will define height */
 }
 
 #entryView .input-group {
@@ -53,7 +53,7 @@ label.inline-label {
     font-weight: normal;
 }
 
-select, textarea {
+select, textarea, input[type="text"] {
     width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
@@ -68,34 +68,28 @@ textarea {
     min-height: 40px;
 }
 
-/* *** ADDED: Plot Number Section Styles *** */
+/* Plot Number Section Styles */
 .plot-number-section {
     display: flex;
     align-items: center;
-    margin-bottom: 15px; /* Space below plot number */
-    padding-bottom: 10px; /* Optional: add some padding below */
-    border-bottom: 1px solid #eee; /* Optional: visual separator */
-    gap: 10px; /* Space between label and counter group */
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    gap: 10px;
 }
-
 .plot-number-label {
     font-weight: bold;
     color: #555;
-    font-size: 1em; /* Match other labels */
-    margin-bottom: 0; /* Override default label margin */
-    flex-shrink: 0; /* Prevent label from shrinking */
+    font-size: 1em;
+    margin-bottom: 0;
+    flex-shrink: 0;
 }
-
-/* Ensure plot counter group fits well here */
 .plot-counter-group {
-    /* Existing styles should work, adjust if needed */
-    margin: 0; /* Remove extra margin if added previously */
-    display: flex; /* Ensure flex display if not already inherited */
-    align-items: center; /* Ensure vertical alignment */
-    gap: 8px; /* Ensure spacing */
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
-
-/* Plot Number Counter Button Styles (ensure they are defined) */
 .plot-counter-btn {
     background-color: #6c757d;
     color: white;
@@ -112,7 +106,6 @@ textarea {
 }
 .plot-counter-btn:hover { background-color: #5a6268; }
 .plot-counter-btn:disabled { background-color: #cccccc; cursor: not-allowed; opacity: 0.7; }
-
 #plotNumberDisplay {
     font-size: 1.1em;
     font-weight: bold;
@@ -124,10 +117,8 @@ textarea {
     background-color: #f8f9fa;
     margin: 0;
 }
-/* *** END Plot Number Section Styles *** */
 
-
-/* Condensed Input Row Styles (Plot counter removed from here) */
+/* Condensed Input Row Styles */
 .input-row-condensed {
     display: flex;
     flex-wrap: wrap;
@@ -137,10 +128,8 @@ textarea {
     padding: 8px 0;
     border-bottom: 1px solid #eee;
     border-top: 1px solid #eee;
-    justify-content: space-between; /* Adjust alignment as needed */
+    justify-content: space-between;
 }
-
-/* Cut Checkbox Styles */
 .cut-checkbox-group {
     display: flex;
     align-items: center;
@@ -165,14 +154,12 @@ textarea {
     color: #333;
     cursor: pointer;
 }
-
-/* Location Group Styles */
 .location-group {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-grow: 1; /* Allow it to take available space */
-    min-width: 150px; /* Ensure it has some minimum width */
+    flex-grow: 1;
+    min-width: 150px;
 }
 #getLocationBtn {
     flex-shrink: 0;
@@ -194,7 +181,7 @@ textarea {
     border: 1px solid #eee;
 }
 
-/* Button Section (Submit, Save, Tally) */
+/* Button Section */
 .button-section {
     text-align: center;
     padding: 10px 15px;
@@ -202,13 +189,11 @@ textarea {
     flex-wrap: wrap;
     justify-content: center;
     gap: 8px;
-    /* Ensure background if outside main sections */
     background-color: #fff;
     border-radius: 5px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     margin-bottom: 10px;
 }
-
 button {
     background-color: #007bff;
     color: white;
@@ -222,16 +207,13 @@ button {
 }
 button:hover { background-color: #0056b3; }
 button:disabled { background-color: #cccccc; cursor: not-allowed; }
-
-#viewTallyBtn { background-color: #ffc107; color: #333; } /* Yellow for Tally */
+#viewTallyBtn { background-color: #ffc107; color: #333; }
 #viewTallyBtn:hover { background-color: #e0a800; }
 #viewTallyBtn:disabled { background-color: #ffeeba; }
-
-#backToEntryBtn { background-color: #6c757d; } /* Grey for Back */
+#backToEntryBtn { background-color: #6c757d; }
 #backToEntryBtn:hover { background-color: #5a6268; }
 
-
-/* Output Section (Recent Entries List) */
+/* Output Section (Recent Entries Table) */
 #entryView .output-section h2 {
     color: #333;
     text-align: center;
@@ -240,12 +222,14 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     white-space: nowrap;
     box-sizing: border-box;
 }
-
-.delete-button { /* Style for "Delete Selected" */
+.delete-button-container { /* Container for positioning */
+     position: absolute;
+     top: 15px;
+     right: 15px;
+}
+.delete-button {
     background-color: #dc3545;
-    position: absolute;
-    top: 15px;
-    right: 15px;
+    /* position removed, using container */
     margin: 0;
     padding: 6px 10px;
     font-size: 0.9em;
@@ -253,184 +237,200 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 .delete-button:hover { background-color: #c82333; }
 .delete-button:disabled { background-color: #e07e87; }
 
-#entriesList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 400px;
+/* Table Styles */
+.table-container {
+    max-height: 400px; /* Limit height and make scrollable */
     overflow-y: auto;
-    border: 1px solid #eee;
-    padding: 5px;
+    border: 1px solid #ddd;
     border-radius: 4px;
 }
-#entriesList li {
-    background-color: #e9ecef;
-    margin-bottom: 5px;
-    padding: 8px;
-    border-radius: 4px;
-    display: flex;
-    align-items: flex-start; /* Align checkbox with top of text */
-    font-size: 0.9em;
-    line-height: 1.4;
-}
-#entriesList li input[type="checkbox"] {
-    margin-right: 8px;
-    flex-shrink: 0;
-    transform: scale(1.1);
-    margin-top: 3px; /* Fine-tune vertical alignment */
-}
-#entriesList li .entry-details { flex-grow: 1; }
-#entriesList li .entry-details .detail-label { font-weight: bold; color: #555; }
-#entriesList li .entry-details .detail-value { color: #333; }
-#entriesList li .entry-details > div { margin-bottom: 2px; } /* Tighter spacing */
 
-#noEntriesMsg {
-    color: #6c757d;
-    font-style: italic;
-    border: none;
-    background-color: transparent;
-    text-align: center;
-    padding: 8px;
-    margin: 0;
+#entriesTable {
+    width: 100%;
+    border-collapse: collapse;
     font-size: 0.9em;
+    table-layout: fixed; /* Helps with consistent column widths */
 }
+
+#entriesTable thead th {
+    background-color: #e9ecef;
+    border-bottom: 2px solid #ccc;
+    padding: 8px;
+    text-align: left;
+    font-weight: bold;
+    color: #333;
+    position: sticky; /* Keep header visible on scroll */
+    top: 0;
+    z-index: 1;
+}
+
+#entriesTable tbody tr {
+    border-bottom: 1px solid #eee;
+}
+
+#entriesTable tbody tr:nth-child(even) {
+    background-color: #f8f9fa; /* Subtle striping */
+}
+
+#entriesTable tbody td {
+    padding: 6px 8px;
+    vertical-align: middle; /* Align checkbox and text */
+    overflow: hidden; /* Prevent long text overflow */
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#entriesTable tbody td:first-child { /* Checkbox column */
+    width: 40px; /* Fixed width for checkbox */
+    text-align: center;
+    padding: 4px;
+}
+#entriesTable input[type="checkbox"] {
+    margin: 0;
+    vertical-align: middle;
+    transform: scale(1.1);
+}
+
+/* Column Widths (Adjust as needed) */
+#entriesTable th:nth-child(1), #entriesTable td:nth-child(1) { width: 40px; } /* Checkbox */
+#entriesTable th:nth-child(2), #entriesTable td:nth-child(2) { width: 50px; } /* Plot */
+#entriesTable th:nth-child(3), #entriesTable td:nth-child(3) { width: auto; } /* Species (flexible) */
+#entriesTable th:nth-child(4), #entriesTable td:nth-child(4) { width: 55px; } /* DBH */
+#entriesTable th:nth-child(5), #entriesTable td:nth-child(5) { width: 55px; } /* Logs */
+#entriesTable th:nth-child(6), #entriesTable td:nth-child(6) { width: 50px; } /* Cut */
+
+
+/* Style for the "No entries" row */
+#noEntriesRow td {
+    text-align: center;
+    font-style: italic;
+    color: #6c757d;
+    padding: 15px;
+    background-color: #fff !important; /* Override striping */
+}
+
+/* Species Management Styles */
+.toggle-section { text-align: center; margin: 10px 0; }
+.toggle-button { background-color: #6c757d; color: white; padding: 6px 12px; width: auto; font-size: 0.9em; }
+.toggle-button:hover { background-color: #5a6268; }
+.collapsible-section { overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease-out; max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; border-top: none; border-bottom: none; box-shadow: none; }
+.collapsible-section:not([hidden]) { max-height: 1000px; padding: 15px; margin-bottom: 10px; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+.input-with-button { display: flex; gap: 5px; }
+.input-with-button input[type="text"] { flex-grow: 1; min-width: 100px; }
+.input-with-button button { flex-shrink: 0; padding: 8px 12px; font-size: 1.1em; line-height: 1; }
+#speciesManagementSection h2 { font-size: 1.2em; text-align: center; margin-bottom: 15px; margin-top: 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+.species-add-group, .species-remove-group { margin-bottom: 15px; }
+#removeSpeciesSelect { width: 100%; margin-bottom: 8px; font-size: 0.95em; border: 1px solid #ccc; border-radius: 4px; min-height: 100px; }
+#removeSpeciesBtn { background-color: #dc3545; display: block; width: 100%; box-sizing: border-box; }
+#removeSpeciesBtn:hover { background-color: #c82333; }
+#speciesMgmtFeedback { /* Uses .feedback-message styles */ }
 
 /* Feedback Message */
-.feedback-message {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 4px;
-    text-align: center;
-    font-size: 0.95em;
-    display: none;
-    transition: opacity 0.5s ease-in-out;
-    opacity: 0; /* Start hidden */
-}
-.feedback-message.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border-color: #f5c6cb;
+.feedback-message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin: 10px 0; border-radius: 4px; text-align: center; font-size: 0.95em; display: none; transition: opacity 0.5s ease-in-out; opacity: 0; }
+.feedback-message.error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+
+/* Tally View Styles */
+#tallyView .tally-section { background-color: #fff; padding: 20px; margin-bottom: 10px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+#tallyView h1 { color: #333; text-align: center; margin-top: 10px; margin-bottom: 15px; font-size: 1.6em; }
+#tallyView h2 { text-align: center; color: #333; margin-top: 0; margin-bottom: 15px; font-size: 1.3em; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+#tallyResults { max-height: 60vh; overflow-y: auto; padding: 5px; border: 1px solid #eee; border-radius: 4px; background-color: #f8f9fa; }
+#tallyResults .tally-species { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ccc; }
+#tallyResults .tally-species:last-child { border-bottom: none; margin-bottom: 0; }
+#tallyResults h3 { font-size: 1.15em; color: #0056b3; margin-top: 0; margin-bottom: 8px; }
+#tallyResults h4 { font-size: 1.05em; color: #444; margin-top: 0; margin-bottom: 5px; padding-left: 15px; }
+#tallyResults .tally-log-item { font-size: 0.95em; color: #555; margin-bottom: 3px; padding-left: 30px; }
+#tallyResults .tally-log-item .log-label { font-weight: normal; }
+#tallyResults .tally-log-item .log-count { font-weight: bold; color: #155724; }
+#tallyResults .no-tally-data { color: #6c757d; font-style: italic; text-align: center; padding: 15px; }
+
+/* Delete All Button Section Styles */
+.delete-all-section { text-align: center; margin-top: 20px; margin-bottom: 15px; padding: 10px; }
+.delete-all-button { background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 1em; font-weight: bold; transition: background-color 0.2s ease; }
+.delete-all-button:hover { background-color: #c82333; }
+.delete-all-button:disabled { background-color: #e07e87; cursor: not-allowed; opacity: 0.7; }
+
+/* --- Modal Styles --- */
+.modal-overlay {
+    position: fixed; /* Stay in place */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+    z-index: 1000; /* Sit on top */
+    display: flex; /* Use flexbox for centering */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
 }
 
-
-/* --- Tally View Styles --- */
-#tallyView .tally-section {
-    background-color: #fff;
+.modal-content {
+    background-color: #fefefe;
+    margin: auto; /* Necessary for older browsers */
     padding: 20px;
-    margin-bottom: 10px;
+    border: 1px solid #888;
     border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    width: 85%; /* Could be more specific */
+    max-width: 400px; /* Maximum width */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    text-align: center;
 }
 
-#tallyView h1 { /* Ensure tally view h1 is styled if needed */
-    color: #333;
-    text-align: center;
-    margin-top: 10px;
-    margin-bottom: 15px;
-    font-size: 1.6em;
-}
-
-
-#tallyView h2 {
-    text-align: center;
-    color: #333;
+.modal-content h2 {
     margin-top: 0;
-    margin-bottom: 15px;
     font-size: 1.3em;
+    color: #333;
     border-bottom: 1px solid #eee;
     padding-bottom: 10px;
-}
-
-#tallyResults {
-    max-height: 60vh; /* Limit height and allow scrolling */
-    overflow-y: auto;
-    padding: 5px;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    background-color: #f8f9fa; /* Light background for results area */
-}
-
-#tallyResults .tally-species {
     margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px dashed #ccc;
-}
-#tallyResults .tally-species:last-child {
-    border-bottom: none; /* Remove border from last species */
-    margin-bottom: 0;
 }
 
-
-#tallyResults h3 { /* Species Name */
-    font-size: 1.15em;
-    color: #0056b3; /* Darker blue */
-    margin-top: 0;
-    margin-bottom: 8px;
-}
-
-#tallyResults h4 { /* DBH Value */
-    font-size: 1.05em;
-    color: #444;
-    margin-top: 0;
-    margin-bottom: 5px;
-    padding-left: 15px; /* Indent DBH */
-}
-
-#tallyResults .tally-log-item { /* Log + Count */
+.modal-content p {
+    margin-bottom: 15px;
     font-size: 0.95em;
     color: #555;
-    margin-bottom: 3px;
-    padding-left: 30px; /* Further indent Logs */
 }
 
-#tallyResults .tally-log-item .log-label {
+.fc-options {
+    display: flex;
+    flex-direction: column; /* Stack options vertically */
+    align-items: flex-start; /* Align radio buttons left */
+    margin-bottom: 20px;
+    padding-left: 20%; /* Indent options a bit */
+}
+
+.fc-options label {
+    margin-bottom: 8px;
     font-weight: normal;
-}
-
-#tallyResults .tally-log-item .log-count {
-    font-weight: bold;
-    color: #155724; /* Green for count */
-}
-
-#tallyResults .no-tally-data {
-    color: #6c757d;
-    font-style: italic;
-    text-align: center;
-    padding: 15px;
-}
-
-/* *** ADDED: Delete All Button Section Styles *** */
-.delete-all-section {
-    text-align: center;
-    margin-top: 20px; /* Space above the delete all button */
-    margin-bottom: 15px; /* Space below the delete all button */
-    padding: 10px;
-    /* This section is outside the white boxes, so no background needed unless desired */
-}
-
-.delete-all-button {
-    background-color: #dc3545; /* Red background */
-    color: white;
-    border: none;
-    padding: 10px 20px; /* Make it slightly larger */
-    border-radius: 4px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
     font-size: 1em;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
 }
-.delete-all-button:hover {
-    background-color: #c82333; /* Darker red on hover */
-}
-.delete-all-button:disabled {
-    background-color: #e07e87; /* Lighter red when disabled */
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-/* *** END Delete All Button Section Styles *** */
 
+.fc-options input[type="radio"] {
+    margin-right: 10px;
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-around; /* Space out buttons */
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.modal-buttons button {
+    padding: 8px 15px;
+    font-size: 0.95em;
+}
+
+#cancelFcBtn {
+    background-color: #6c757d;
+}
+#cancelFcBtn:hover {
+    background-color: #5a6268;
+}
 
 /* --- END OF FILE style.css --- */
