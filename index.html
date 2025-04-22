@@ -6,6 +6,8 @@
     <title>TimberTally</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
+    <!-- Font Awesome for potential icons (optional) -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> -->
 </head>
 <body>
 
@@ -13,7 +15,8 @@
     <div id="entryView">
         <h1>TimberTally</h1>
 
-        <div class="input-section">
+        <!-- ... (Input Section remains the same) ... -->
+         <div class="input-section">
             <!-- Plot Number Counter Section -->
             <div class="plot-number-section">
                 <label for="plotNumberDisplay" class="plot-number-label">Plot #:</label>
@@ -58,6 +61,8 @@
             </div>
         </div>
 
+
+        <!-- ... (Button Section remains the same) ... -->
         <div class="button-section">
             <button id="submitBtn">Submit Entry</button>
             <button id="saveCsvBtn" disabled>Save CSV File</button>
@@ -69,12 +74,15 @@
 
         <!-- === Recent Entries Table === -->
         <div class="output-section">
-            <h2>Recent Entries (<span id="entryCount">0</span>)</h2>
-            <div class="delete-button-container">
-                <button id="deleteBtn" class="delete-button" disabled>Delete Selected</button>
+             <!-- **NEW:** Container for top controls -->
+            <div class="output-controls">
+                 <button id="deleteBtn" class="delete-button control-button" disabled>Delete Selected</button>
+                 <button id="showCompassBtn" class="compass-button control-button">Show Compass</button>
             </div>
-            <div class="table-container"> <!-- Added container for scrolling -->
+            <h2>Recent Entries (<span id="entryCount">0</span>)</h2>
+            <div class="table-container">
                 <table id="entriesTable">
+                     <!-- ... (Table Head/Body remains the same) ... -->
                     <thead>
                         <tr>
                             <th><!-- Checkbox --></th>
@@ -93,10 +101,25 @@
                     </tbody>
                 </table>
             </div>
+            <!-- Removed delete button container from here -->
         </div>
         <!-- === END Recent Entries Table === -->
 
+        <!-- **NEW:** Compass Display Container (Initially Hidden) -->
+        <div id="compassContainer" style="display: none;">
+             <div id="compass">
+                 <div id="compassNeedle"></div>
+             </div>
+             <div id="compassInfo">
+                 <span id="compassHeading">---°</span>
+                 <span id="compassSource"> (Source: ---)</span>
+                 <p>(Note: Accuracy depends on device sensors and calibration. May show Magnetic North.)</p>
+             </div>
+             <button id="closeCompassBtn">Close</button>
+        </div>
 
+
+        <!-- ... (Rest of HTML remains the same: Species Management, Tally View, Modal) ... -->
         <!-- === Collapsible Species Management Section Trigger === -->
         <div class="toggle-section">
             <button id="toggleSpeciesMgmtBtn" class="toggle-button" aria-expanded="false" aria-controls="speciesManagementSection">
@@ -153,9 +176,9 @@
                 <label><input type="radio" name="formClass" value="72"> FC 72</label>
                 <label><input type="radio" name="formClass" value="74"> FC 74</label>
                 <label><input type="radio" name="formClass" value="76"> FC 76</label>
-                <label><input type="radio" name="formClass" value="78" checked> FC 78 (Base)</label> <!-- Default to FC78 now -->
-                <label><input type="radio" name="formClass" value="80"> FC 80</label> <!-- Added FC 80 -->
-                <label><input type="radio" name="formClass" value="82"> FC 82</label> <!-- Added FC 82 -->
+                <label><input type="radio" name="formClass" value="78" checked> FC 78 (Base Table)</label>
+                <label><input type="radio" name="formClass" value="80"> FC 80</label>
+                <label><input type="radio" name="formClass" value="82"> FC 82</label>
             </div>
             <div class="modal-buttons">
                 <button id="confirmFcBtn">Confirm & Save CSV</button>
