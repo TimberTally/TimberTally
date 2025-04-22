@@ -41,7 +41,11 @@ if ('serviceWorker' in navigator) {
                         // track the installing worker state changes
                         const installingWorker = registration.installing; // Use a local const here
                         if (installingWorker) {
-                            newWorker = installingWorker; // Assign to the higher-scoped variable for the button
+                            // Ensure newWorker is available for the update bar logic
+                             // This assumes the global 'newWorker' is accessible or you have a way to access it
+                            if (typeof newWorker === 'undefined' || !newWorker) {
+                                newWorker = installingWorker;
+                            }
                             installingWorker.addEventListener('statechange', () => {
                                 // Has the worker finished installing?
                                 if (installingWorker.state === 'installed') {
@@ -50,6 +54,8 @@ if ('serviceWorker' in navigator) {
                                     if (navigator.serviceWorker.controller) {
                                         // If yes, it means this is an update, show the prompt.
                                         console.log('[App] New worker is waiting (detected via updatefound). Showing update bar.');
+                                        // Ensure the waiting worker is assigned if it changed during install
+                                        if(registration.waiting) newWorker = registration.waiting;
                                         showUpdateBar();
                                     } else {
                                         // Otherwise, it's the very first install, do nothing,
@@ -65,9 +71,9 @@ if ('serviceWorker' in navigator) {
                         }
                     });
 
-                    // 3. Optional: Periodically check for updates (e.g., every hour)
+                    // 3. Optional: Periodically check for updates (e.g., every hour) - Kept for background checks
                     setInterval(() => {
-                        console.log('[App] Checking for service worker updates...');
+                        console.log('[App] Checking for service worker updates (hourly)...');
                         registration.update().catch(err => {
                             console.error('[App] Error during periodic SW update check:', err);
                         });
@@ -162,6 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const formClassSelect = document.getElementById('formClassSelect');
     const formClassGroup = document.getElementById('formClassGroup');
     const settingsFeedback = document.getElementById('settingsFeedback');
+    const manualUpdateCheckBtn = document.getElementById('manualUpdateCheckBtn'); // *** NEW ***
+    const updateCheckStatus = document.getElementById('updateCheckStatus'); // *** NEW ***
 
    // --- Species Management Elements ---
    const speciesManagementSection = document.getElementById('speciesManagementSection');
@@ -199,8 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const compassSource = document.getElementById('compassSource');
     const closeCompassBtn = document.getElementById('closeCompassBtn');
 
-    // --- Update Notification elements (already declared outside DOMContentLoaded) ---
-    const updateNotification = document.getElementById('updateNotification'); // Redeclare here for scope within DOMContentLoaded if needed, or rely on outer scope
+    // --- Update Notification elements (declared outside if using SW logic directly) ---
+    const updateNotification = document.getElementById('updateNotification'); // Can be used by SW check logic
 
     // --- Tree Key Modal Elements ---
     const showTreeKeyBtn = document.getElementById('showTreeKeyBtn');
@@ -220,6 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let settingsFeedbackTimeout = null;
     let speciesFeedbackTimeout = null;
     let projectFeedbackTimeout = null;
+    let updateStatusTimeout = null; // *** NEW *** For clearing update status
     let savedProjects = {}; // Object to hold projects { projectName: [data], ... }
 
     // --- Plot Counter State ---
@@ -481,11 +490,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if(submitBtn) submitBtn.addEventListener('click', () => {
         try {
             if (!dbhSelect || !speciesSelect || !logsSelect || !cutCheckbox || !notesTextarea) return;
-            checkAndSetLogsForDbh();
+            checkAndSetLogsForDbh(); // Run this before getting values if it can change Logs
             const newEntry = { id: Date.now(), plotNumber: currentPlotNumber, dbh: dbhSelect.value, species: speciesSelect.value, logs: logsSelect.value, cutStatus: cutCheckbox.checked ? 'Yes' : 'No', notes: notesTextarea.value.trim(), location: currentLocation };
             if (!newEntry.species || !newEntry.dbh || !newEntry.logs) { showFeedback("Species, DBH, and Logs required.", true); return; }
-            collectedData.push(newEntry); renderEntries(); saveSessionData(); showFeedback("Entry Added!");
-            cutCheckbox.checked = false; notesTextarea.value = ''; currentLocation = null;
+            collectedData.push(newEntry);
+            renderEntries();
+            saveSessionData();
+            showFeedback("Entry Added!");
+
+            // Reset only non-persistent fields
+            // if (speciesSelect.options.length > 0) speciesSelect.selectedIndex = 0; // <<< DO NOT RESET SPECIES
+            // if (dbhSelect.options.length > 0) dbhSelect.selectedIndex = 0; // <<< DO NOT RESET DBH
+            // if (logsSelect.options.length > 0) logsSelect.selectedIndex = 0; // <<< DO NOT RESET LOGS
+            cutCheckbox.checked = false;
+            notesTextarea.value = '';
+            currentLocation = null;
             if(locationStatus) { locationStatus.textContent = 'Location not set'; locationStatus.style.color = '#555'; }
          } catch (error) { console.error("Submit Error:", error); showFeedback(`Submit Error: ${error.message}`, true, 5000); }
     });
@@ -568,6 +587,61 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logRuleSelect) logRuleSelect.addEventListener('change', (e) => { currentLogRule = e.target.value; toggleFormClassSelector(); saveSettings(); showSettingsFeedback(`Rule: ${currentLogRule}`, false); checkAndSetLogsForDbh(); });
     if (formClassSelect) formClassSelect.addEventListener('change', (e) => { currentFormClass = parseInt(e.target.value, 10); saveSettings(); showSettingsFeedback(`Doyle FC: ${currentFormClass}`, false); });
 
+    // *** NEW: Manual Update Check Button Listener ***
+    if (manualUpdateCheckBtn && updateCheckStatus && 'serviceWorker' in navigator) {
+        manualUpdateCheckBtn.addEventListener('click', () => {
+            if (updateStatusTimeout) clearTimeout(updateStatusTimeout); // Clear previous timeout if any
+            updateCheckStatus.textContent = 'Checking...';
+            manualUpdateCheckBtn.disabled = true; // Disable button while checking
+
+            navigator.serviceWorker.ready.then(registration => {
+                console.log('[App] Manual update check initiated.');
+                return registration.update(); // Chain the promise
+            }).then(reg => { // registration.update() returns the registration object (or undefined if error/no update)
+                if (!reg) {
+                    console.warn('[App] registration.update() returned undefined, possibly no SW active or error.');
+                    updateCheckStatus.textContent = 'Check failed (No SW?).';
+                    updateStatusTimeout = setTimeout(() => { if(updateCheckStatus) updateCheckStatus.textContent = ''; }, 3000);
+                    return;
+                }
+
+                if (reg.installing) {
+                    updateCheckStatus.textContent = 'Update found, installing...';
+                    console.log('[App] Update found via manual check (installing).');
+                    // Your existing 'updatefound' listener should eventually show the update bar
+                } else if (reg.waiting) {
+                    updateCheckStatus.textContent = 'Update ready!';
+                    console.log('[App] Update found via manual check (waiting).');
+                    // Ensure global 'newWorker' (from SW registration part) is set
+                    // Check if 'newWorker' exists in the outer scope and assign if needed
+                     if (typeof newWorker === 'undefined' || !newWorker) {
+                        newWorker = reg.waiting;
+                     }
+                     // Directly show the update bar if already waiting
+                    if (typeof showUpdateBar === 'function') {
+                        showUpdateBar();
+                    } else {
+                         console.error("showUpdateBar function not found");
+                    }
+                } else {
+                    updateCheckStatus.textContent = 'App is up-to-date.';
+                    console.log('[App] No update found via manual check.');
+                    // Clear status after a delay
+                    updateStatusTimeout = setTimeout(() => { if(updateCheckStatus) updateCheckStatus.textContent = ''; }, 3000);
+                }
+            }).catch(err => {
+                 console.error('[App] Manual update check failed:', err);
+                 if(updateCheckStatus) updateCheckStatus.textContent = 'Check failed.';
+                 updateStatusTimeout = setTimeout(() => { if(updateCheckStatus) updateCheckStatus.textContent = ''; }, 3000);
+            }).finally(() => {
+                 if(manualUpdateCheckBtn) manualUpdateCheckBtn.disabled = false; // Re-enable button after check finishes
+            });
+        });
+    } else if (!('serviceWorker' in navigator)) {
+        if(manualUpdateCheckBtn) manualUpdateCheckBtn.disabled = true; // Disable if SW not supported
+        if(updateCheckStatus) updateCheckStatus.textContent = 'Updates N/A';
+    }
+
 
     // --- Event Listeners (Species Management) ---
     if(toggleSpeciesMgmtBtn) toggleSpeciesMgmtBtn.addEventListener('click', () => { if(!speciesManagementSection) return; const isHidden = speciesManagementSection.hidden; speciesManagementSection.hidden = !isHidden; toggleSpeciesMgmtBtn.setAttribute('aria-expanded', String(isHidden)); toggleSpeciesMgmtBtn.innerHTML = isHidden ? 'Hide Species Mgt ▲' : 'Show Species Mgt ▼'; });
@@ -630,7 +704,8 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("Initializing TimberTally application...");
     try {
         // Hide update bar initially (might be shown later by SW logic)
-        if (updateNotification) updateNotification.style.display = 'none';
+        const updateNotificationElement = document.getElementById('updateNotification'); // Get ref locally
+        if (updateNotificationElement) updateNotificationElement.style.display = 'none';
 
         loadSettings(); // Load settings FIRST
         initializeSpeciesManagement();
