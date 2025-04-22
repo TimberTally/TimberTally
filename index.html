@@ -38,6 +38,15 @@
             <!-- Settings Section (Initially Hidden) -->
             <div id="settingsSection" class="collapsible-section" hidden>
                 <h2>Forestry Settings</h2>
+
+                <!-- *** START: Manual Update Check Button *** -->
+                <div class="update-check-container">
+                    <button type="button" id="manualUpdateCheckBtn" class="control-button">Check for Updates</button>
+                    <span id="updateCheckStatus" class="update-check-status"></span>
+                </div>
+                <!-- *** END: Manual Update Check Button *** -->
+
+
                 <div class="input-group">
                     <label for="bafSelect">Basal Area Factor (BAF):</label>
                     <select id="bafSelect">
@@ -68,11 +77,10 @@
                     </select>
                 </div>
 
-                <!-- *** Button to show the Tree Key *** -->
+                <!-- Button to show the Tree Key -->
                 <div class="input-group key-button-container" style="margin-top: 15px; text-align: center;">
                     <button type="button" id="showTreeKeyBtn" class="control-button" style="background-color: #28a745;">Show Tree ID Key</button>
                 </div>
-                <!-- *** End Tree Key Button *** -->
 
                 <!-- Feedback area specifically for settings -->
                 <div id="settingsFeedback" class="feedback-message" style="margin-top: 10px;"></div>
