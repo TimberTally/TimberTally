@@ -239,7 +239,8 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
 /* Table Styles */
 .table-container {
-    max-height: 400px; /* Limit height and make scrollable */
+    /* **MODIFIED:** Increased max-height for a larger box */
+    max-height: 550px; /* Limit height and make scrollable (was 400px) */
     overflow-y: auto;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -294,7 +295,8 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 /* Column Widths (Adjust as needed) */
 #entriesTable th:nth-child(1), #entriesTable td:nth-child(1) { width: 40px; } /* Checkbox */
 #entriesTable th:nth-child(2), #entriesTable td:nth-child(2) { width: 50px; } /* Plot */
-#entriesTable th:nth-child(3), #entriesTable td:nth-child(3) { width: auto; } /* Species (flexible) */
+/* **MODIFIED:** Give species column a specific width instead of auto */
+#entriesTable th:nth-child(3), #entriesTable td:nth-child(3) { width: 25%; } /* Species (e.g., 25% or adjust as needed) */
 #entriesTable th:nth-child(4), #entriesTable td:nth-child(4) { width: 55px; } /* DBH */
 #entriesTable th:nth-child(5), #entriesTable td:nth-child(5) { width: 55px; } /* Logs */
 #entriesTable th:nth-child(6), #entriesTable td:nth-child(6) { width: 50px; } /* Cut */
