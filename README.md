@@ -8,10 +8,6 @@ This application allows users, such as foresters, researchers, or landowners, to
 
 *Contact for inquiries: james.a.baunach@gmail.com*
 
-## License
-
-This software is provided free to use under an open license. Feel free to use, modify, and distribute.
-
 ## Features
 
 *   **Offline First:** Uses a Service Worker to cache application files, allowing it to load and function without network access after the first visit.
