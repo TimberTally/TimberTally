@@ -6,7 +6,7 @@
     <title>TimberTally</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <!-- Font Awesome for potential icons (optional) -->
+    <!-- Link to Font Awesome if you want icons, otherwise remove -->
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> -->
 </head>
 <body>
@@ -15,35 +15,81 @@
     <div id="entryView">
         <h1>TimberTally</h1>
 
-        <!-- ... (Input Section remains the same) ... -->
+        <!-- Input Section -->
          <div class="input-section">
-            <!-- Plot Number Counter Section -->
-            <div class="plot-number-section">
-                <label for="plotNumberDisplay" class="plot-number-label">Plot #:</label>
-                <div class="plot-counter-group">
-                    <button type="button" id="plotDecrementBtn" class="plot-counter-btn" title="Decrement Plot Number">-</button>
-                    <span id="plotNumberDisplay" title="Current Plot Number">1</span>
-                    <button type="button" id="plotIncrementBtn" class="plot-counter-btn" title="Increment Plot Number">+</button>
+            <!-- Plot Number Counter & Settings Button Section -->
+            <div class="plot-settings-header">
+                <div class="plot-number-section">
+                    <label for="plotNumberDisplay" class="plot-number-label">Plot #:</label>
+                    <div class="plot-counter-group">
+                        <button type="button" id="plotDecrementBtn" class="plot-counter-btn" title="Decrement Plot Number">-</button>
+                        <span id="plotNumberDisplay" title="Current Plot Number">1</span>
+                        <button type="button" id="plotIncrementBtn" class="plot-counter-btn" title="Increment Plot Number">+</button>
+                    </div>
                 </div>
+                 <!-- Settings Toggle Button (New!) -->
+                <button id="toggleSettingsBtn" class="settings-toggle-btn" title="Show Forestry Settings" aria-expanded="false" aria-controls="settingsSection">
+                    Settings ⚙ <!-- Gear icon -->
+                </button>
             </div>
-            <!-- Species -->
+
+            <!-- Settings Section (Initially Hidden - New!) -->
+            <div id="settingsSection" class="collapsible-section" hidden> <!-- Start hidden -->
+                <h2>Forestry Settings</h2>
+                <div class="input-group">
+                    <label for="bafSelect">Basal Area Factor (BAF):</label>
+                    <select id="bafSelect">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option> <!-- Default selected -->
+                        <option value="20">20</option>
+                        <option value="30">30</option>
+                        <option value="40">40</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="logRuleSelect">Log Rule (Volume):</label>
+                    <select id="logRuleSelect">
+                        <option value="Doyle" selected>Doyle</option> <!-- Default selected -->
+                        <option value="Scribner">Scribner</option>
+                        <option value="International">International 1/4"</option>
+                    </select>
+                </div>
+                <div class="input-group" id="formClassGroup"> <!-- Container to show/hide -->
+                    <label for="formClassSelect">Doyle Form Class:</label>
+                    <select id="formClassSelect">
+                        <option value="72">72</option>
+                        <option value="74">74</option>
+                        <option value="76">76</option>
+                        <option value="78" selected>78</option> <!-- Default selected -->
+                        <option value="80">80</option>
+                        <option value="82">82</option>
+                    </select>
+                </div>
+                <!-- Feedback area specifically for settings -->
+                <div id="settingsFeedback" class="feedback-message" style="margin-top: 10px;"></div>
+            </div>
+            <!-- End Settings Section -->
+
+            <!-- Standard Tree Data Inputs -->
             <div class="input-group">
                 <label for="speciesSelect">Species:</label>
                 <select id="speciesSelect">
                     <!-- Options populated by JavaScript -->
                 </select>
             </div>
-            <!-- DBH -->
             <div class="input-group">
                 <label for="dbhSelect">DBH:</label>
-                <select id="dbhSelect"></select>
+                <select id="dbhSelect">
+                    <!-- Options populated by JavaScript -->
+                </select>
             </div>
-            <!-- Logs -->
             <div class="input-group">
                 <label for="logsSelect">Logs:</label>
-                <select id="logsSelect"></select>
+                <select id="logsSelect">
+                    <!-- Options populated by JavaScript -->
+                </select>
             </div>
-             <!-- Condensed Row -->
+             <!-- Condensed Row: Cut Status & Location -->
             <div class="input-row-condensed">
                 <div class="cut-checkbox-group">
                     <input type="checkbox" id="cutCheckbox" name="cutStatus">
@@ -54,7 +100,7 @@
                     <span id="locationStatus" title="GPS Status">Location not set</span>
                 </div>
             </div>
-            <!-- Notes Textarea -->
+            <!-- Notes -->
             <div class="input-group">
                 <label for="notesTextarea">Notes:</label>
                 <textarea id="notesTextarea" rows="2"></textarea>
@@ -62,19 +108,19 @@
         </div>
 
 
-        <!-- ... (Button Section remains the same) ... -->
+        <!-- Button Section -->
         <div class="button-section">
             <button id="submitBtn">Submit Entry</button>
-            <button id="saveCsvBtn" disabled>Save CSV File</button>
+            <button id="saveCsvBtn" disabled>Save CSV</button> <!-- No longer prompts FC -->
             <button id="viewTallyBtn" disabled>View Tally</button>
         </div>
 
-        <!-- Feedback Message Area -->
+        <!-- General Feedback Message Area -->
         <div id="feedbackMsg" class="feedback-message"></div>
 
         <!-- === Recent Entries Table === -->
         <div class="output-section">
-             <!-- **NEW:** Container for top controls -->
+             <!-- Container for top controls (Delete Selected, Show Compass) -->
             <div class="output-controls">
                  <button id="deleteBtn" class="delete-button control-button" disabled>Delete Selected</button>
                  <button id="showCompassBtn" class="compass-button control-button">Show Compass</button>
@@ -82,7 +128,6 @@
             <h2>Recent Entries (<span id="entryCount">0</span>)</h2>
             <div class="table-container">
                 <table id="entriesTable">
-                     <!-- ... (Table Head/Body remains the same) ... -->
                     <thead>
                         <tr>
                             <th><!-- Checkbox --></th>
@@ -101,11 +146,10 @@
                     </tbody>
                 </table>
             </div>
-            <!-- Removed delete button container from here -->
         </div>
         <!-- === END Recent Entries Table === -->
 
-        <!-- **NEW:** Compass Display Container (Initially Hidden) -->
+        <!-- Compass Display Container (Initially Hidden) -->
         <div id="compassContainer" style="display: none;">
              <div id="compass">
                  <div id="compassNeedle"></div>
@@ -118,17 +162,59 @@
              <button id="closeCompassBtn">Close</button>
         </div>
 
+        <!-- === Project Management Section Trigger === -->
+        <div class="toggle-section">
+            <button id="toggleProjectMgmtBtn" class="toggle-button" aria-expanded="false" aria-controls="projectManagementSection">
+                Show Project Management ▼
+            </button>
+        </div>
 
-        <!-- ... (Rest of HTML remains the same: Species Management, Tally View, Modal) ... -->
-        <!-- === Collapsible Species Management Section Trigger === -->
+        <!-- === Project Management Section (Initially Hidden) === -->
+        <div id="projectManagementSection" class="input-section collapsible-section" hidden> <!-- Use input-section for consistent look -->
+            <h2>Manage Projects</h2>
+            <!-- Project Naming and Saving -->
+            <div class="project-group">
+                <label for="projectNameInput">Current Project Name:</label>
+                <div class="input-with-button">
+                    <input type="text" id="projectNameInput" placeholder="Enter project name to save">
+                    <button id="saveProjectBtn" title="Save Current Data to This Project Name">Save Project</button>
+                </div>
+            </div>
+            <!-- Load Saved Project -->
+            <div class="project-group">
+                <label for="loadProjectSelect">Load Saved Project:</label>
+                <div class="input-with-button">
+                    <select id="loadProjectSelect">
+                        <option value="">-- Select a project --</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                    <button id="loadProjectBtn" title="Load Selected Project (Replaces Current Data)">Load</button>
+                    <button id="deleteProjectBtn" class="delete-button" title="Delete Selected Saved Project">Del</button>
+                </div>
+            </div>
+             <!-- Load Project from CSV -->
+            <div class="project-group">
+                 <label for="csvFileInput">Load Project from CSV File:</label>
+                 <div class="input-with-button">
+                     <input type="file" id="csvFileInput" accept=".csv" style="flex-grow: 1;">
+                     <button id="loadCsvBtn" title="Load Data from Selected CSV (Replaces Current Data)">Load CSV</button>
+                 </div>
+            </div>
+            <!-- Feedback area specifically for projects -->
+            <div id="projectMgmtFeedback" class="feedback-message" style="margin-top: 10px;"></div>
+        </div>
+        <!-- === END Project Management Section === -->
+
+
+        <!-- === Species Management Section Trigger === -->
         <div class="toggle-section">
             <button id="toggleSpeciesMgmtBtn" class="toggle-button" aria-expanded="false" aria-controls="speciesManagementSection">
-                Show Species Management ▼ <!-- Down arrow -->
+                Show Species Management ▼
             </button>
         </div>
 
         <!-- === Species Management Section (Initially Hidden) === -->
-        <div id="speciesManagementSection" class="input-section collapsible-section" hidden> <!-- Start hidden -->
+        <div id="speciesManagementSection" class="input-section collapsible-section" hidden> <!-- Use input-section for consistent look -->
             <h2>Manage Species</h2>
             <div class="species-add-group">
                 <label for="newSpeciesInput">Add New Species:</label>
@@ -142,6 +228,7 @@
                 <select id="removeSpeciesSelect" multiple size="6"></select>
                 <button id="removeSpeciesBtn">Remove Selected</button>
             </div>
+            <!-- Feedback area specifically for species -->
             <div id="speciesMgmtFeedback" class="feedback-message" style="margin-top: 10px;"></div>
         </div>
         <!-- === END Species Management Section === -->
@@ -157,9 +244,9 @@
     <div id="tallyView" style="display: none;">
         <h1>Data Tally</h1>
         <div class="tally-section">
-             <h2>Tally by Species, DBH, Logs, Cut Status</h2> <!-- Updated Tally Title -->
+             <h2>Tally by Species, DBH, Logs, Cut Status</h2>
              <div id="tallyResults">
-                 <p>Calculating tally...</p>
+                 <p>Calculating tally...</p> <!-- Placeholder -->
              </div>
              <div class="button-section">
                 <button id="backToEntryBtn">Back to Data Entry</button>
@@ -167,26 +254,7 @@
         </div>
     </div> <!-- End of tallyView -->
 
-    <!-- === Form Class Selection Modal (Initially Hidden) === -->
-    <div id="fcPromptModal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <h2>Select Doyle Form Class</h2>
-            <p>Choose the Form Class to use for volume calculations in the report:</p>
-            <div class="fc-options">
-                <label><input type="radio" name="formClass" value="72"> FC 72</label>
-                <label><input type="radio" name="formClass" value="74"> FC 74</label>
-                <label><input type="radio" name="formClass" value="76"> FC 76</label>
-                <label><input type="radio" name="formClass" value="78" checked> FC 78 (Base Table)</label>
-                <label><input type="radio" name="formClass" value="80"> FC 80</label>
-                <label><input type="radio" name="formClass" value="82"> FC 82</label>
-            </div>
-            <div class="modal-buttons">
-                <button id="confirmFcBtn">Confirm & Save CSV</button>
-                <button id="cancelFcBtn" type="button">Cancel</button>
-            </div>
-        </div>
-    </div>
-    <!-- === END Form Class Selection Modal === -->
+    <!-- Modal REMOVED -->
 
     <script src="script.js" defer></script>
 </body>
