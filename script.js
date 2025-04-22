@@ -92,25 +92,44 @@ document.addEventListener('DOMContentLoaded', () => {
    let currentSpeciesList = [...DEFAULT_SPECIES];
 
 
-    // --- Doyle Volume Tables (FC72 base, others scaled) ---
-    // Base Doyle Form Class 72 Volume Table (Board Feet)
-    const DOYLE_FC72_VOLUMES = {
-        '12': { '0.5': 9, '1.0': 18, '1.5': 25, '2.0': 31, '2.5': 35, '3.0': 40, '3.5': 43, '4.0': 46 },
-        '14': { '0.5': 16, '1.0': 33, '1.5': 45, '2.0': 57, '2.5': 66, '3.0': 74, '3.5': 81, '4.0': 87 },
-        '16': { '0.5': 27, '1.0': 54, '1.5': 73, '2.0': 92, '2.5': 107, '3.0': 122, '3.5': 134, '4.0': 144 },
-        '18': { '0.5': 40, '1.0': 80, '1.5': 109, '2.0': 138, '2.5': 162, '3.0': 185, '3.5': 204, '4.0': 221 },
-        '20': { '0.5': 56, '1.0': 111, '1.5': 152, '2.0': 193, '2.5': 229, '3.0': 261, '3.5': 289, '4.0': 315 },
-        '22': { '0.5': 74, '1.0': 148, '1.5': 203, '2.0': 258, '2.5': 307, '3.0': 352, '3.5': 392, '4.0': 429 },
-        '24': { '0.5': 96, '1.0': 192, '1.5': 263, '2.0': 335, '2.5': 401, '3.0': 461, '3.5': 516, '4.0': 565 },
-        '26': { '0.5': 121, '1.0': 241, '1.5': 332, '2.0': 422, '2.5': 507, '3.0': 585, '3.5': 656, '4.0': 721 },
-        '28': { '0.5': 149, '1.0': 297, '1.5': 410, '2.0': 521, '2.5': 627, '3.0': 725, '3.5': 814, '4.0': 895 },
-        '30': { '0.5': 180, '1.0': 359, '1.5': 496, '2.0': 631, '2.5': 760, '3.0': 881, '3.5': 993, '4.0': 1095 },
-        '32': { '0.5': 214, '1.0': 428, '1.5': 592, '2.0': 753, '2.5': 908, '3.0': 1054, '3.5': 1189, '4.0': 1313 },
-        '34': { '0.5': 252, '1.0': 503, '1.5': 696, '2.0': 885, '2.5': 1068, '3.0': 1241, '3.5': 1401, '4.0': 1551 },
-        '36': { '0.5': 293, '1.0': 585, '1.5': 809, '2.0': 1029, '2.5': 1241, '3.0': 1442, '3.5': 1629, '4.0': 1804 },
-        '38': { '0.5': 337, '1.0': 673, '1.5': 931, '2.0': 1184, '2.5': 1429, '3.0': 1662, '3.5': 1879, '4.0': 2081 },
-        '40': { '0.5': 384, '1.0': 767, '1.5': 1062, '2.0': 1350, '2.5': 1629, '3.0': 1897, '3.5': 2146, '4.0': 2377 },
+    // --- Doyle Volume Table (FC78 is now the base) ---
+    // Doyle Form Class 78 Volume Table (Board Feet) - From Provided Image
+    const DOYLE_FC78_VOLUMES = {
+        // DBH: { '1.0': Vol, '1.5': Vol, '2.0': Vol, '2.5': Vol, '3.0': Vol, ... }
+        '10': { '0.5': 0, '1.0': 14, '1.5': 17, '2.0': 20, '2.5': 21, '3.0': 22, '3.5': 0, '4.0': 0, '4.5': 0, '5.0': 0, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '11': { '0.5': 0, '1.0': 22, '1.5': 27, '2.0': 32, '2.5': 35, '3.0': 38, '3.5': 0, '4.0': 0, '4.5': 0, '5.0': 0, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '12': { '0.5': 0, '1.0': 29, '1.5': 36, '2.0': 43, '2.5': 48, '3.0': 53, '3.5': 54, '4.0': 56, '4.5': 0, '5.0': 0, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '13': { '0.5': 0, '1.0': 38, '1.5': 48, '2.0': 59, '2.5': 66, '3.0': 73, '3.5': 76, '4.0': 80, '4.5': 0, '5.0': 0, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '14': { '0.5': 0, '1.0': 48, '1.5': 62, '2.0': 75, '2.5': 84, '3.0': 93, '3.5': 98, '4.0': 103, '4.5': 0, '5.0': 0, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '15': { '0.5': 0, '1.0': 60, '1.5': 78, '2.0': 96, '2.5': 108, '3.0': 121, '3.5': 128, '4.0': 136, '4.5': 0, '5.0': 0, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '16': { '0.5': 0, '1.0': 72, '1.5': 94, '2.0': 116, '2.5': 132, '3.0': 149, '3.5': 160, '4.0': 170, '4.5': 0, '5.0': 0, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '17': { '0.5': 0, '1.0': 86, '1.5': 113, '2.0': 140, '2.5': 161, '3.0': 182, '3.5': 196, '4.0': 209, '4.5': 0, '5.0': 0, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '18': { '0.5': 0, '1.0': 100, '1.5': 132, '2.0': 164, '2.5': 190, '3.0': 215, '3.5': 232, '4.0': 248, '4.5': 0, '5.0': 0, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '19': { '0.5': 0, '1.0': 118, '1.5': 156, '2.0': 195, '2.5': 225, '3.0': 256, '3.5': 276, '4.0': 297, '4.5': 0, '5.0': 0, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '20': { '0.5': 0, '1.0': 135, '1.5': 180, '2.0': 225, '2.5': 261, '3.0': 297, '3.5': 322, '4.0': 346, '4.5': 364, '5.0': 383, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '21': { '0.5': 0, '1.0': 154, '1.5': 207, '2.0': 260, '2.5': 302, '3.0': 344, '3.5': 374, '4.0': 404, '4.5': 428, '5.0': 452, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '22': { '0.5': 0, '1.0': 174, '1.5': 234, '2.0': 295, '2.5': 344, '3.0': 392, '3.5': 427, '4.0': 462, '4.5': 492, '5.0': 521, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '23': { '0.5': 0, '1.0': 195, '1.5': 264, '2.0': 332, '2.5': 388, '3.0': 444, '3.5': 483, '4.0': 522, '4.5': 558, '5.0': 594, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '24': { '0.5': 0, '1.0': 216, '1.5': 293, '2.0': 370, '2.5': 433, '3.0': 496, '3.5': 539, '4.0': 582, '4.5': 625, '5.0': 668, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '25': { '0.5': 0, '1.0': 241, '1.5': 328, '2.0': 414, '2.5': 486, '3.0': 558, '3.5': 609, '4.0': 660, '4.5': 709, '5.0': 758, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '26': { '0.5': 0, '1.0': 266, '1.5': 362, '2.0': 459, '2.5': 539, '3.0': 619, '3.5': 678, '4.0': 737, '4.5': 793, '5.0': 849, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '27': { '0.5': 0, '1.0': 292, '1.5': 398, '2.0': 505, '2.5': 594, '3.0': 684, '3.5': 749, '4.0': 814, '4.5': 877, '5.0': 940, '5.5': 0, '6.0': 0 }, // Added 0.5 log entry as 0
+        '28': { '0.5': 0, '1.0': 317, '1.5': 434, '2.0': 551, '2.5': 651, '3.0': 750, '3.5': 820, '4.0': 890, '4.5': 961, '5.0': 1032, '5.5': 1096, '6.0': 1161 },// Added 0.5 log entry as 0
+        '29': { '0.5': 0, '1.0': 346, '1.5': 475, '2.0': 604, '2.5': 714, '3.0': 824, '3.5': 902, '4.0': 980, '4.5': 1061, '5.0': 1142, '5.5': 1218, '6.0': 1294 },// Added 0.5 log entry as 0
+        '30': { '0.5': 0, '1.0': 376, '1.5': 517, '2.0': 658, '2.5': 778, '3.0': 898, '3.5': 984, '4.0': 1069, '4.5': 1160, '5.0': 1251, '5.5': 1339, '6.0': 1427 },// Added 0.5 log entry as 0
+        '31': { '0.5': 0, '1.0': 408, '1.5': 562, '2.0': 717, '2.5': 850, '3.0': 983, '3.5': 1080, '4.0': 1176, '4.5': 1273, '5.0': 1370, '5.5': 1470, '6.0': 1570 },// Added 0.5 log entry as 0
+        '32': { '0.5': 0, '1.0': 441, '1.5': 608, '2.0': 776, '2.5': 922, '3.0': 1068, '3.5': 1176, '4.0': 1283, '4.5': 1386, '5.0': 1488, '5.5': 1600, '6.0': 1712 },// Added 0.5 log entry as 0
+        '33': { '0.5': 0, '1.0': 474, '1.5': 654, '2.0': 835, '2.5': 994, '3.0': 1152, '3.5': 1268, '4.0': 1385, '4.5': 1497, '5.0': 1609, '5.5': 1734, '6.0': 1858 },// Added 0.5 log entry as 0
+        '34': { '0.5': 0, '1.0': 506, '1.5': 700, '2.0': 894, '2.5': 1064, '3.0': 1235, '3.5': 1361, '4.0': 1487, '4.5': 1608, '5.0': 1730, '5.5': 1866, '6.0': 2003 },// Added 0.5 log entry as 0
+        '35': { '0.5': 0, '1.0': 544, '1.5': 754, '2.0': 964, '2.5': 1149, '3.0': 1334, '3.5': 1472, '4.0': 1610, '4.5': 1743, '5.0': 1876, '5.5': 2020, '6.0': 2163 },// Added 0.5 log entry as 0
+        '36': { '0.5': 0, '1.0': 581, '1.5': 808, '2.0': 1035, '2.5': 1234, '3.0': 1434, '3.5': 1583, '4.0': 1732, '4.5': 1878, '5.0': 2023, '5.5': 2173, '6.0': 2323 },// Added 0.5 log entry as 0
+        '37': { '0.5': 0, '1.0': 618, '1.5': 860, '2.0': 1102, '2.5': 1318, '3.0': 1534, '3.5': 1694, '4.0': 1854, '4.5': 2013, '5.0': 2172, '5.5': 2332, '6.0': 2492 },// Added 0.5 log entry as 0
+        '38': { '0.5': 0, '1.0': 655, '1.5': 912, '2.0': 1170, '2.5': 1402, '3.0': 1635, '3.5': 1805, '4.0': 1975, '4.5': 2148, '5.0': 2322, '5.5': 2491, '6.0': 2660 },// Added 0.5 log entry as 0
+        '39': { '0.5': 0, '1.0': 698, '1.5': 974, '2.0': 1250, '2.5': 1498, '3.0': 1746, '3.5': 1932, '4.0': 2118, '4.5': 2298, '5.0': 2479, '5.5': 2662, '6.0': 2844 },// Added 0.5 log entry as 0
+        '40': { '0.5': 0, '1.0': 740, '1.5': 1035, '2.0': 1330, '2.5': 1594, '3.0': 1858, '3.5': 2059, '4.0': 2260, '4.5': 2448, '5.0': 2636, '5.5': 2832, '6.0': 3027 } // Added 0.5 log entry as 0
     };
+    // Note: Added '0.5' log entries with value 0 to match other tables structure if needed,
+    // though the table image starts at 1 log. Adjust if 0.5 logs should have values based on other conventions.
 
     // --- Function to save current data to localStorage ---
     function saveSessionData() {
@@ -156,7 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Populate Dropdowns ---
     function populateDbhOptions() { dbhSelect.innerHTML = ''; console.log("Populating DBH options..."); for (let i = 4; i <= 40; i += 2) { const option = document.createElement('option'); option.value = String(i); option.textContent = String(i); dbhSelect.appendChild(option); } if (dbhSelect.options.length > 0) dbhSelect.selectedIndex = 0; console.log("DBH options populated. Current value:", dbhSelect.value); }
-    function populateLogsOptions() { logsSelect.innerHTML = ''; console.log("Populating Logs options..."); const logValues = ["0", "0.5", "1", "1.5", "2", "2.5", "3", "3.5", "4", "Cull"]; logValues.forEach(value => { const option = document.createElement('option'); option.value = value; option.textContent = value; logsSelect.appendChild(option); }); if (logsSelect.options.length > 0) logsSelect.selectedIndex = 0; console.log("Logs options populated. Current value:", logsSelect.value); }
+    function populateLogsOptions() { logsSelect.innerHTML = ''; console.log("Populating Logs options...");
+        // **MODIFIED:** Updated logValues array
+        const logValues = ["0", "0.5", "1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5", "5", "5.5", "6", "Cull"];
+        logValues.forEach(value => { const option = document.createElement('option'); option.value = value; option.textContent = value; logsSelect.appendChild(option); }); if (logsSelect.options.length > 0) logsSelect.selectedIndex = 0; console.log("Logs options populated. Current value:", logsSelect.value); }
     function checkAndSetLogsForDbh() { if (!dbhSelect || !logsSelect) { console.error("Cannot check Logs for DBH: Select elements not found."); return; } const selectedDbh = dbhSelect.value; const dbhValuesToResetLogs = ['4', '6', '8', '10']; if (dbhValuesToResetLogs.includes(selectedDbh) && logsSelect.value !== '0') { logsSelect.value = '0'; console.log(`DBH is ${selectedDbh}. Logs forced to 0.`); } }
 
     // --- Plot Counter Logic ---
@@ -208,54 +230,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Tally Logic ---
     function generateTallyData() { const tally = {}; collectedData.forEach(entry => { const { species, dbh, logs, cutStatus } = entry; if (!species || !dbh || !logs || !cutStatus) { console.warn("Skipping entry in tally due to missing data:", entry); return; } if (!tally[species]) tally[species] = {}; if (!tally[species][dbh]) tally[species][dbh] = {}; if (!tally[species][dbh][logs]) tally[species][dbh][logs] = {}; if (!tally[species][dbh][logs][cutStatus]) tally[species][dbh][logs][cutStatus] = 0; tally[species][dbh][logs][cutStatus]++; }); return tally; }
-    function displayTallyResults(tallyData) { tallyResultsContainer.innerHTML = ''; const speciesKeys = Object.keys(tallyData).sort(); if (speciesKeys.length === 0) { const p = document.createElement('p'); p.textContent = 'No data available to tally.'; p.classList.add('no-tally-data'); tallyResultsContainer.appendChild(p); return; } speciesKeys.forEach(species => { const speciesDiv = document.createElement('div'); speciesDiv.classList.add('tally-species'); const speciesHeading = document.createElement('h3'); speciesHeading.textContent = species; speciesDiv.appendChild(speciesHeading); const dbhKeys = Object.keys(tallyData[species]).sort((a, b) => Number(a) - Number(b)); dbhKeys.forEach(dbh => { const dbhHeading = document.createElement('h4'); dbhHeading.textContent = `DBH: ${dbh}`; speciesDiv.appendChild(dbhHeading); const logKeys = Object.keys(tallyData[species][dbh]).sort((a, b) => { if (a === 'Cull') return 1; if (b === 'Cull') return -1; return Number(a) - Number(b); }); logKeys.forEach(logs => { const countsObject = tallyData[species][dbh][logs]; const countCut = countsObject['Yes'] || 0; const countNotCut = countsObject['No'] || 0; if (countCut > 0) { const logItemDivCut = document.createElement('div'); logItemDivCut.classList.add('tally-log-item'); const labelSpanCut = document.createElement('span'); labelSpanCut.classList.add('log-label'); labelSpanCut.textContent = `Logs: ${logs} (Cut) - `; const countSpanCut = document.createElement('span'); countSpanCut.classList.add('log-count'); countSpanCut.textContent = `Count: ${countCut}`; logItemDivCut.appendChild(labelSpanCut); logItemDivCut.appendChild(countSpanCut); speciesDiv.appendChild(logItemDivCut); } if (countNotCut > 0) { const logItemDivNotCut = document.createElement('div'); logItemDivNotCut.classList.add('tally-log-item'); const labelSpanNotCut = document.createElement('span'); labelSpanNotCut.classList.add('log-label'); labelSpanNotCut.textContent = `Logs: ${logs} (Not Cut) - `; const countSpanNotCut = document.createElement('span'); countSpanNotCut.classList.add('log-count'); countSpanNotCut.textContent = `Count: ${countNotCut}`; logItemDivNotCut.appendChild(labelSpanNotCut); logItemDivNotCut.appendChild(countSpanNotCut); speciesDiv.appendChild(logItemDivNotCut); } }); }); tallyResultsContainer.appendChild(speciesDiv); }); }
+    function displayTallyResults(tallyData) { tallyResultsContainer.innerHTML = ''; const speciesKeys = Object.keys(tallyData).sort(); if (speciesKeys.length === 0) { const p = document.createElement('p'); p.textContent = 'No data available to tally.'; p.classList.add('no-tally-data'); tallyResultsContainer.appendChild(p); return; } speciesKeys.forEach(species => { const speciesDiv = document.createElement('div'); speciesDiv.classList.add('tally-species'); const speciesHeading = document.createElement('h3'); speciesHeading.textContent = species; speciesDiv.appendChild(speciesHeading); const dbhKeys = Object.keys(tallyData[species]).sort((a, b) => Number(a) - Number(b)); dbhKeys.forEach(dbh => { const dbhHeading = document.createElement('h4'); dbhHeading.textContent = `DBH: ${dbh}`; speciesDiv.appendChild(dbhHeading); const logKeys = Object.keys(tallyData[species][dbh]).sort((a, b) => { if (a === 'Cull') return 1; if (b === 'Cull') return -1; // Keep Cull logic if needed
+                                    // Convert to number for sorting, handle potential non-numeric like 'Cull' safely
+                                    const numA = parseFloat(a);
+                                    const numB = parseFloat(b);
+                                    if (isNaN(numA) && isNaN(numB)) return 0;
+                                    if (isNaN(numA)) return 1; // Place non-numbers after numbers
+                                    if (isNaN(numB)) return -1;// Place non-numbers after numbers
+                                    return numA - numB;
+                                    });
+                                logKeys.forEach(logs => { const countsObject = tallyData[species][dbh][logs]; const countCut = countsObject['Yes'] || 0; const countNotCut = countsObject['No'] || 0; if (countCut > 0) { const logItemDivCut = document.createElement('div'); logItemDivCut.classList.add('tally-log-item'); const labelSpanCut = document.createElement('span'); labelSpanCut.classList.add('log-label'); labelSpanCut.textContent = `Logs: ${logs} (Cut) - `; const countSpanCut = document.createElement('span'); countSpanCut.classList.add('log-count'); countSpanCut.textContent = `Count: ${countCut}`; logItemDivCut.appendChild(labelSpanCut); logItemDivCut.appendChild(countSpanCut); speciesDiv.appendChild(logItemDivCut); } if (countNotCut > 0) { const logItemDivNotCut = document.createElement('div'); logItemDivNotCut.classList.add('tally-log-item'); const labelSpanNotCut = document.createElement('span'); labelSpanNotCut.classList.add('log-label'); labelSpanNotCut.textContent = `Logs: ${logs} (Not Cut) - `; const countSpanNotCut = document.createElement('span'); countSpanNotCut.classList.add('log-count'); countSpanNotCut.textContent = `Count: ${countNotCut}`; logItemDivNotCut.appendChild(labelSpanNotCut); logItemDivNotCut.appendChild(countSpanNotCut); speciesDiv.appendChild(logItemDivNotCut); } }); }); tallyResultsContainer.appendChild(speciesDiv); }); }
 
     // --- Forestry Report Calculation Logic ---
 
-    // **MODIFIED:** Get Doyle Volume (BF) using Form Class lookup table and scaling
-    function getDoyleVolume(dbhStr, logsStr, formClass = 72) {
-        const dbhInt = parseInt(dbhStr, 10);
-        const dbhKey = String(dbhInt);
+    // **MODIFIED:** Get Doyle Volume using specific FC78 table as BASE, scaling others
+    function getDoyleVolume(dbhStr, logsStr, formClass = 78) { // Default parameter updated to 78
+        try {
+            // ... (rest of the input parsing and key generation logic remains the same) ...
+            const dbhInt = parseInt(dbhStr, 10);
+            const dbhKey = String(dbhInt);
+            if (logsStr === 'Cull') return 0;
+            const logsNum = parseFloat(logsStr);
+            if (isNaN(logsNum) || logsNum <= 0) return 0;
+            let logsKey;
+            if (logsNum % 1 === 0 || logsNum % 0.5 === 0) {
+                logsKey = logsNum.toFixed(1);
+            } else {
+                logsKey = (Math.floor(logsNum * 2) / 2).toFixed(1);
+                if (parseFloat(logsKey) <= 0) return 0;
+            }
+            if (isNaN(dbhInt) || dbhInt < 10) return 0;
 
-        // Basic validation
-        if (logsStr === 'Cull' || isNaN(parseFloat(logsStr))) return 0;
-        const logsNum = parseFloat(logsStr);
-        if (isNaN(dbhInt) || dbhInt < 12 || logsNum <= 0) return 0;
+            let fcInt = parseInt(formClass, 10);
+             if (isNaN(fcInt) || fcInt <= 0) {
+                console.warn(`Invalid Form Class '${formClass}', defaulting to 78.`);
+                fcInt = 78; // Default to 78 if invalid
+             }
 
-        const logsKey = logsNum.toFixed(1); // Format to "1.0", "1.5", etc.
+            let volume = 0;
+            const dbhEntryFC78 = DOYLE_FC78_VOLUMES[dbhKey];
 
-        // Get base volume from FC72 table
-        const dbhEntryFC72 = DOYLE_FC72_VOLUMES[dbhKey];
-        let baseVolume = 0;
-        if (dbhEntryFC72 && dbhEntryFC72.hasOwnProperty(logsKey)) {
-            baseVolume = dbhEntryFC72[logsKey];
-        } else {
-            return 0; // No volume found for this DBH/Log combination in base table
-        }
+            // Check if the DBH and specific log height exist in the base FC78 table
+            if (dbhEntryFC78 && dbhEntryFC78.hasOwnProperty(logsKey)) {
+                 const baseVolumeFC78 = dbhEntryFC78[logsKey];
 
-        // Apply scaling factor for other form classes (approximation)
-        const fcInt = parseInt(formClass, 10);
-        if (isNaN(fcInt) || fcInt <= 0) {
-             console.warn(`Invalid Form Class '${formClass}', using FC72.`);
-             return baseVolume; // Default to FC72 if invalid
-        }
+                 // --- Specific FC 78 Lookup (No Scaling)---
+                 if (fcInt === 78) {
+                    volume = baseVolumeFC78;
+                 // --- Other FCs (Scale FROM FC 78) - This handles 72, 74, 76, 80, 82 etc. ---
+                 } else {
+                     if (78.0 > 0) { // Prevent potential division by zero (though base is fixed)
+                        const scaleFactor = fcInt / 78.0;
+                        volume = Math.round(baseVolumeFC78 * scaleFactor);
+                     } else {
+                         volume = 0;
+                     }
+                 }
+            }
+            // If DBH or Log key doesn't exist in base FC78 table, volume remains 0
 
-        if (fcInt === 72) {
-            return baseVolume; // No scaling needed
-        } else {
-            // Simple scaling - adjust based on ratio to FC72
-            // Note: Real forestry tables might have more complex relationships
-            const scaleFactor = fcInt / 72.0;
-            return Math.round(baseVolume * scaleFactor); // Return scaled volume, rounded
+            return volume;
+
+        } catch (e) {
+            console.error("Error in getDoyleVolume:", e, "Input:", dbhStr, logsStr, formClass);
+            return 0;
         }
     }
 
     function getDbhClass(dbh) { if (isNaN(dbh)) return 'Invalid'; if (dbh >= 4 && dbh <= 5) return 'Sapling'; if (dbh >= 6 && dbh <= 11) return 'Poletimber'; if (dbh >= 12 && dbh <= 17) return 'Small Sawtimber'; if (dbh >= 18 && dbh <= 23) return 'Medium Sawtimber'; if (dbh >= 24) return 'Large Sawtimber'; return 'Other'; }
 
-    // **MODIFIED:** Calculate Forestry Report, now accepts formClass
-    function calculateForestryReport(data, baf = 10, formClass = 72) {
+    // Calculate Forestry Report, accepts formClass
+    function calculateForestryReport(data, baf = 10, formClass = 72) { // Keep default param for now, choice happens in modal
         const report = { summary: {}, standDistribution: {}, speciesSummary1: {}, speciesSummary2: {} };
-        // ... (keep existing initial checks for data and plotNumbers) ...
         if (!data || data.length === 0) { console.warn("No data for report."); return report; }
         const plotNumbers = new Set(data.map(entry => entry.plotNumber));
         const numberOfPlots = plotNumbers.size;
@@ -282,9 +328,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isCut) totalCutTrees++;
 
             const baTree = BA_CONST * Math.pow(dbh, 2);
+            if (baTree <= 0) return; // Avoid division by zero for TPA
             const tpaTree = baf / baTree;
-            // **MODIFIED:** Call getDoyleVolume with the selected formClass
-            const volTree = getDoyleVolume(entry.dbh, entry.logs, formClass);
+            const volTree = getDoyleVolume(entry.dbh, entry.logs, formClass); // Uses the selected formClass
             const vpaTree = volTree * tpaTree; // Volume per Acre represented by this tree
 
             totalBaSum += baTree;
@@ -407,6 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 volMedium: spData.volMedium / numberOfPlots,
                 volLarge: spData.volLarge / numberOfPlots,
                 totalSpeciesVolPerAcre: spVolPerAcre,
+                // Correct property name for the percentage calculation:
                 percentTotalVolume: totalVolPerAcre > 0 ? (spVolPerAcre / totalVolPerAcre) * 100 : 0,
             };
         });
@@ -421,6 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
             volMedium: totalMediumVol,
             volLarge: totalLargeVol,
             totalSpeciesVolPerAcre: speciesVolTotalSum,
+            // Correct property name for the percentage calculation:
             percentTotalVolume: totalVolPerAcre > 0 ? (speciesVolTotalSum / totalVolPerAcre) * 100 : 0, // Should be 100%
         };
 
@@ -428,13 +476,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // **MODIFIED:** Format Report, now accepts formClass
-    function formatReportForCsv(report, formClass = 72) {
+    // Format Report, accepts formClass
+    function formatReportForCsv(report, formClass = 72) { // Keep default param for now
         if (!report || !report.summary || Object.keys(report.summary).length === 0) {
             return "\n--- FORESTRY REPORT DATA ---\nNo data to report.\n";
         }
 
-        // **MODIFIED:** Include BAF and Form Class in the header
+        // Include BAF and Form Class in the header
         let csv = `\n\n--- FORESTRY REPORT DATA (BAF=${BAF}, Doyle FC${formClass} Volume Estimation) ---\n`;
 
         const fmt = (num, digits = 1) => (typeof num === 'number' && !isNaN(num) ? num.toFixed(digits) : '0.0');
@@ -458,7 +506,9 @@ document.addEventListener('DOMContentLoaded', () => {
         classOrder.forEach(cls => {
             const data = report.standDistribution[cls] || {};
             const label = classLabels[cls] || cls;
-            csv += `"${label}",${fmt(data.percentTotalStems)}%,${fmt(data.baSqFtCut)},${fmt(data.baSqFtNotCut)},${fmt(data.baSqFtTotal)},${fmt(data.percentBa)}%,${fmtInt(data.volumeBf)},${fmt(data.percentVolume)}%\n`;
+            // Ensure percentVolume exists before formatting
+            const percentVolFormatted = data.percentVolume !== undefined ? fmt(data.percentVolume) : '0.0';
+            csv += `"${label}",${fmt(data.percentTotalStems)}%,${fmt(data.baSqFtCut)},${fmt(data.baSqFtNotCut)},${fmt(data.baSqFtTotal)},${fmt(data.percentBa)}%,${fmtInt(data.volumeBf)},${percentVolFormatted}%\n`;
         });
         csv += "\n";
 
@@ -477,13 +527,15 @@ document.addEventListener('DOMContentLoaded', () => {
         species2Order.forEach(species => {
             const data = report.speciesSummary2[species] || {};
             const label = species === 'TOTALS' ? "TOTALS" : `"${species}"`;
-            csv += `${label},${fmtInt(data.volSmall)},${fmtInt(data.volMedium)},${fmtInt(data.volLarge)},${fmtInt(data.totalSpeciesVolPerAcre)},${fmt(data.percentVolume)}%\n`;
+            // Use the correct property name 'percentTotalVolume'
+            const percentTotalVolFormatted = data.percentTotalVolume !== undefined ? fmt(data.percentTotalVolume) : '0.0';
+            csv += `${label},${fmtInt(data.volSmall)},${fmtInt(data.volMedium)},${fmtInt(data.volLarge)},${fmtInt(data.totalSpeciesVolPerAcre)},${percentTotalVolFormatted}%\n`;
         });
 
         return csv;
     }
 
-    // --- **NEW:** Function to generate and download the CSV ---
+    // Function to generate and download the CSV including Per-Plot Stats
     function generateAndDownloadCsv(selectedFormClass) {
         if (collectedData.length === 0) {
             showFeedback("No data to save.", true);
@@ -508,10 +560,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const dbhKeys = Object.keys(tallyData[species]).sort((a, b) => Number(a) - Number(b));
             dbhKeys.forEach(dbh => {
                 const logKeys = Object.keys(tallyData[species][dbh]).sort((a, b) => {
-                    if (a === 'Cull') return 1;
-                    if (b === 'Cull') return -1;
-                    return Number(a) - Number(b);
-                });
+                    if (a === 'Cull') return 1; if (b === 'Cull') return -1;
+                    const numA = parseFloat(a); const numB = parseFloat(b);
+                    if (isNaN(numA) && isNaN(numB)) return 0; if (isNaN(numA)) return 1; if (isNaN(numB)) return -1; return numA - numB; });
                 logKeys.forEach(logs => {
                     const countsObject = tallyData[species][dbh][logs];
                     const countCut = countsObject['Yes'] || 0;
@@ -522,20 +573,94 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // 3. Forestry Report Data (using selected Form Class)
-        console.log(`Calculating forestry report using FC ${selectedFormClass}...`);
-        const reportData = calculateForestryReport(collectedData, BAF, selectedFormClass);
-        const reportCsvContent = formatReportForCsv(reportData, selectedFormClass);
+        // 3. Calculate Per-Plot Volume and Statistics
+        let plotStatsCsvContent = "";
+        let plotVpaList = [];
+        let plotVpaMap = {}; // Use a map to store {plotNum: vpa}
+        let meanVpa = 0, varianceVpa = 0, stdDevVpa = 0, cvVpa = 0;
+        const plotsWithData = {}; // Structure: { plotNum: [treeEntry1, treeEntry2, ...] }
+
+        // Group data by plot number
+        collectedData.forEach(entry => {
+            if (!plotsWithData[entry.plotNumber]) {
+                plotsWithData[entry.plotNumber] = [];
+            }
+            plotsWithData[entry.plotNumber].push(entry);
+        });
+
+        const plotNumbers = Object.keys(plotsWithData).map(Number).sort((a, b) => a - b);
+
+        if (plotNumbers.length > 0) {
+            plotStatsCsvContent = `\n\n--- PER-PLOT VOLUME & STATISTICS (Doyle FC${selectedFormClass}, BAF=${BAF}) ---\n`;
+            plotStatsCsvContent += "Plot,Volume (BF/Acre)\n";
+
+            plotNumbers.forEach(plotNum => {
+                let totalVpaForPlot = 0;
+                plotsWithData[plotNum].forEach(tree => {
+                    try {
+                        const dbh = parseFloat(tree.dbh);
+                        if (isNaN(dbh) || dbh <= 0) return; // Skip invalid DBH
+
+                        const baTree = BA_CONST * Math.pow(dbh, 2);
+                        if (baTree <= 0) return; // Skip zero BA
+
+                        const tpaTree = BAF / baTree;
+                        const volTree = getDoyleVolume(tree.dbh, tree.logs, selectedFormClass); // Uses selected FC
+                        const vpaTree = volTree * tpaTree;
+                        totalVpaForPlot += vpaTree;
+                    } catch (e) {
+                        console.error(`Error processing tree in plot ${plotNum}:`, tree, e);
+                    }
+                });
+                const roundedVpa = Math.round(totalVpaForPlot);
+                plotVpaMap[plotNum] = roundedVpa; // Store in map
+                plotVpaList.push(roundedVpa);     // Add to list for stats
+                plotStatsCsvContent += `${plotNum},${roundedVpa}\n`;
+            });
+
+            // Calculate Statistics
+            const n = plotVpaList.length;
+            if (n > 0) {
+                const sumVpa = plotVpaList.reduce((acc, val) => acc + val, 0);
+                meanVpa = sumVpa / n;
+
+                if (n > 1) {
+                    const sumOfSquares = plotVpaList.reduce((acc, val) => acc + Math.pow(val - meanVpa, 2), 0);
+                    varianceVpa = sumOfSquares / (n - 1);
+                    stdDevVpa = Math.sqrt(varianceVpa);
+                    if (meanVpa !== 0) { // Avoid division by zero
+                       cvVpa = (stdDevVpa / meanVpa) * 100;
+                    }
+                }
+            }
+
+            // Add Stats to CSV content
+            plotStatsCsvContent += "\n"; // Blank line before stats
+            plotStatsCsvContent += `Number of Plots,${n}\n`;
+            plotStatsCsvContent += `Mean BF/Acre,${meanVpa.toFixed(1)}\n`;
+            plotStatsCsvContent += `Variance (BF/Acre)^2,${n > 1 ? varianceVpa.toFixed(1) : 'N/A'}\n`;
+            plotStatsCsvContent += `Standard Deviation (BF/Acre),${n > 1 ? stdDevVpa.toFixed(1) : 'N/A'}\n`;
+            plotStatsCsvContent += `Coefficient of Variation (CV),${(n > 1 && meanVpa !== 0) ? cvVpa.toFixed(1) + '%' : 'N/A'}\n`;
+
+        } else {
+             plotStatsCsvContent = "\n\n--- PER-PLOT VOLUME & STATISTICS ---\nNo plot data found to calculate statistics.\n";
+        }
+
+
+        // 4. Forestry Report Data (using selected Form Class)
+        // Note: The report calculation uses ALL data, its average should align with the mean calculated above.
+        console.log(`Calculating overall forestry report using FC ${selectedFormClass}...`);
+        const reportData = calculateForestryReport(collectedData, BAF, selectedFormClass); // Pass selected FC
+        const reportCsvContent = formatReportForCsv(reportData, selectedFormClass); // Pass selected FC
         console.log("Report calculation complete.");
 
-        // 4. Combine and Download
-        const combinedCsvContent = rawCsvContent + tallyCsvContent + reportCsvContent;
+        // 5. Combine and Download
+        const combinedCsvContent = rawCsvContent + tallyCsvContent + plotStatsCsvContent + reportCsvContent;
         const blob = new Blob([combinedCsvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         const timestamp = new Date().toISOString().slice(0, 19).replace(/[-T:]/g, "");
         link.setAttribute("href", url);
-        // Include FC in filename
         link.setAttribute("download", `TimberTally_Export_FC${selectedFormClass}_${timestamp}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
@@ -548,29 +673,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- **MODIFIED:** Save CSV Button Handler (Now shows modal) ---
+    // Save CSV Button Handler (Now shows modal)
     saveCsvBtn.addEventListener('click', () => {
         if (collectedData.length === 0) {
             showFeedback("No data to save.", true);
             return;
         }
-        // Show the modal instead of generating CSV directly
         fcPromptModal.style.display = 'flex'; // Use flex to enable centering
     });
 
-    // --- **NEW:** Modal Button Event Listeners ---
+    // Modal Button Event Listeners
     confirmFcBtn.addEventListener('click', () => {
-        let selectedFc = '72'; // Default to 72
-        for (const radioButton of fcRadioButtons) {
-            if (radioButton.checked) {
-                selectedFc = radioButton.value;
-                break;
-            }
-        }
-        fcPromptModal.style.display = 'none'; // Hide modal
-        generateAndDownloadCsv(selectedFc); // Proceed with CSV generation
-    });
+        let selectedFc = null; // Start with null
+         for (const radioButton of fcRadioButtons) {
+             if (radioButton.checked) {
+                 selectedFc = radioButton.value;
+                 break;
+             }
+         }
+         // Ensure a value IS selected, default to 78 if somehow none are checked
+         if (!selectedFc) {
+             const fc78Radio = document.querySelector('input[name="formClass"][value="78"]');
+             if(fc78Radio) {
+                 selectedFc = fc78Radio.value;
+                 fc78Radio.checked = true; // Ensure 78 is checked visually if nothing else was
+             } else {
+                 selectedFc = '78'; // Absolute fallback
+             }
+             console.warn("No Form Class selected, defaulting to FC 78.");
+         }
 
+        fcPromptModal.style.display = 'none'; // Hide modal
+        generateAndDownloadCsv(selectedFc); // Proceed with CSV generation using the chosen FC
+    });
     cancelFcBtn.addEventListener('click', () => {
         fcPromptModal.style.display = 'none'; // Hide modal, do nothing else
     });
@@ -598,7 +733,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("Initializing TimberTally application...");
     initializeSpeciesManagement();
     populateDbhOptions();
-    populateLogsOptions();
+    populateLogsOptions(); // Now includes 4.5 and 5.0
     dbhSelect.addEventListener('change', checkAndSetLogsForDbh);
     checkAndSetLogsForDbh();
     console.log("Dropdowns (DBH, Logs) initialized and initial log check performed.");
