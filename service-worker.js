@@ -1,48 +1,46 @@
 // --- START OF FILE service-worker.js ---
 
-const CACHE_NAME = 'timber-tally-cache-v1'; // Cache version - change this to update cache
+// V IMPORTANT: Increment this version number with each update!
+const CACHE_NAME = 'timber-tally-cache-v2'; // <--- CHANGE THIS
+
 const urlsToCache = [
-  './', // Cache the root URL (often same as index.html)
+  // ... your list of URLs ...
+  './',
   './index.html',
   './style.css',
   './script.js',
   './manifest.json',
-  './icon.png' // Add any other essential assets like icons
-  // Consider adding an 'offline.html' page here later for better offline UX
-  // './offline.html'
+  './icon.png'
 ];
 
 // --- Installation Event ---
-// Cache the core application shell files
 self.addEventListener('install', event => {
-  console.log('[Service Worker] Installing...');
-  event.waitUntil( // Ensures installation waits until cache is populated
+  console.log('[Service Worker] Installing new version...');
+  event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('[Service Worker] Caching app shell');
-        // Use addAll for atomic caching of essential files
+        console.log('[Service Worker] Caching app shell for new version');
         return cache.addAll(urlsToCache);
       })
       .then(() => {
-        console.log('[Service Worker] Installation complete, app shell cached.');
-        // Force the waiting service worker to become the active service worker.
-        return self.skipWaiting();
+        console.log('[Service Worker] New version installation complete.');
+        // DO NOT call self.skipWaiting() here automatically IF you want a user prompt.
+        // Let the user decide via the UI prompt.
       })
       .catch(error => {
-        console.error('[Service Worker] App shell caching failed:', error);
+        console.error('[Service Worker] New version caching failed:', error);
       })
   );
 });
 
 // --- Activation Event ---
-// Clean up old caches
+// (Your existing activate event to clean up old caches is good)
 self.addEventListener('activate', event => {
-  console.log('[Service Worker] Activating...');
+  console.log('[Service Worker] Activating new version...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          // Delete caches that are not the current cache name
           if (cacheName !== CACHE_NAME) {
             console.log('[Service Worker] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
@@ -51,78 +49,29 @@ self.addEventListener('activate', event => {
       );
     }).then(() => {
       console.log('[Service Worker] Activation complete, old caches deleted.');
-      // Tell the active service worker to take control of the page immediately.
+      // Take control of uncontrolled clients (like the current page)
       return self.clients.claim();
     })
   );
 });
 
 // --- Fetch Event ---
-// Intercept network requests. Apply a Cache-first strategy,
-// dynamically caching successful network responses for future offline use.
+// (Your existing fetch event is fine - cache-first strategy)
 self.addEventListener('fetch', event => {
-  // We only want to intercept GET requests for caching.
-  // Other methods like POST should bypass the cache.
-  if (event.request.method !== 'GET') {
-    // console.log('[Service Worker] Skipping non-GET request:', event.request.method, event.request.url);
-    return; // Let the browser handle non-GET requests directly.
+   // ... your existing fetch logic ...
+    if (event.request.method !== 'GET') {
+        return;
+    }
+    event.respondWith(/* ... */);
+});
+
+// --- Message Event Listener (New!) ---
+// Listen for messages from the client (page)
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[Service Worker] Received SKIP_WAITING message. Activating new version immediately.');
+    self.skipWaiting(); // Tell the waiting service worker to activate
   }
-
-  // console.log('[Service Worker] Handling fetch event for:', event.request.url);
-  event.respondWith(
-    caches.match(event.request) // 1. Check if the request exists in the cache.
-      .then(cachedResponse => {
-        // 2. Cache hit - return the cached response.
-        if (cachedResponse) {
-          // console.log('[Service Worker] Cache hit for:', event.request.url);
-          return cachedResponse;
-        }
-
-        // 3. Cache miss - go to the network.
-        // console.log('[Service Worker] Cache miss, fetching from network:', event.request.url);
-        return fetch(event.request)
-          .then(networkResponse => {
-            // 4. Network fetch successful.
-            // Check if we received a valid response (status 200 OK).
-            if (networkResponse && networkResponse.ok) {
-              // console.log('[Service Worker] Network fetch successful, caching new resource:', event.request.url);
-
-              // IMPORTANT: Clone the response. A response is a stream
-              // and because we want the browser to consume the response
-              // as well as the cache consuming the response, we need
-              // to clone it so we have two streams.
-              const responseToCache = networkResponse.clone();
-
-              // Open the cache and add the new network response.
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  // cache.put() stores the response under the request key.
-                  cache.put(event.request, responseToCache)
-                    .catch(err => {
-                        // Log errors during cache.put, e.g., storage quota exceeded
-                        console.error('[Service Worker] Failed to cache resource:', event.request.url, err);
-                    });
-                });
-            } else {
-                // Log if the network response was not OK (e.g., 404, 500)
-                // console.log('[Service Worker] Network response not OK, not caching:', event.request.url, networkResponse ? networkResponse.status : 'No Response');
-            }
-
-            // Return the original network response to the browser, regardless of whether it was cached.
-            return networkResponse;
-          })
-          .catch(error => {
-            // 5. Network fetch failed (likely offline or server error).
-            console.error('[Service Worker] Network fetch failed:', event.request.url, error);
-            // At this point, the request is not in the cache and the network failed.
-            // We don't have an offline fallback configured yet, so the browser
-            // will show its default offline error page.
-            // To add fallback later: return caches.match('./offline.html');
-            // Re-throwing the error ensures the browser fetch promise rejects correctly.
-            throw error;
-          });
-      })
-  );
 });
 
 // --- END OF FILE service-worker.js ---
