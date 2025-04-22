@@ -22,16 +22,17 @@ h1 {
 #entryView .button-section,
 #entryView .output-section {
     background-color: #fff;
-    padding: 15px;
+    padding: 15px; /* Default padding */
     margin-bottom: 10px;
     border-radius: 5px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
+/* MODIFIED: Output Section padding for controls */
 #entryView .output-section {
-    position: relative;
-    padding-right: 110px; /* Space for delete button */
-    /* Removed min-height, table will define height */
+    position: relative; /* Context for controls positioning */
+    padding-top: 55px; /* Make space for the control bar */
 }
 
 #entryView .input-group {
@@ -194,6 +195,7 @@ textarea {
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     margin-bottom: 10px;
 }
+/* General button styles */
 button {
     background-color: #007bff;
     color: white;
@@ -207,56 +209,71 @@ button {
 }
 button:hover { background-color: #0056b3; }
 button:disabled { background-color: #cccccc; cursor: not-allowed; }
+
+/* Specific Button Styles */
 #viewTallyBtn { background-color: #ffc107; color: #333; }
 #viewTallyBtn:hover { background-color: #e0a800; }
 #viewTallyBtn:disabled { background-color: #ffeeba; }
 #backToEntryBtn { background-color: #6c757d; }
 #backToEntryBtn:hover { background-color: #5a6268; }
+.delete-button { background-color: #dc3545; }
+.delete-button:hover { background-color: #c82333; }
+.delete-button:disabled { background-color: #e07e87; }
+.compass-button { background-color: #17a2b8; } /* Teal color */
+.compass-button:hover { background-color: #138496; }
 
 /* Output Section (Recent Entries Table) */
 #entryView .output-section h2 {
     color: #333;
-    text-align: center;
-    margin: 0 0 10px 0;
+    text-align: center; /* Keep H2 centered */
+    margin: 0 0 10px 0; /* Standard margin below H2 */
     font-size: 1.2em;
     white-space: nowrap;
     box-sizing: border-box;
 }
-.delete-button-container { /* Container for positioning */
-     position: absolute;
-     top: 15px;
-     right: 15px;
+
+/* **NEW:** Output Controls Container */
+.output-controls {
+    position: absolute;
+    top: 15px;  /* Position from the top padding edge */
+    left: 15px; /* Position from the left padding edge */
+    right: 15px; /* Stretch across */
+    display: flex;
+    justify-content: space-between; /* Puts buttons at opposite ends */
+    align-items: center;
+    height: 30px; /* Approximate height of buttons */
+    box-sizing: border-box;
 }
-.delete-button {
-    background-color: #dc3545;
-    /* position removed, using container */
-    margin: 0;
-    padding: 6px 10px;
-    font-size: 0.9em;
+
+/* Adjust control buttons */
+.control-button {
+    padding: 5px 10px; /* Slightly smaller padding */
+    font-size: 0.85em;
+    margin: 0; /* Remove default margins if any */
 }
-.delete-button:hover { background-color: #c82333; }
-.delete-button:disabled { background-color: #e07e87; }
+/* Removed .delete-button-container styles */
 
 /* Table Styles */
 .table-container {
-    /* **MODIFIED:** Increased max-height for a larger box */
-    max-height: 550px; /* Limit height and make scrollable (was 400px) */
+    max-height: 550px; /* Keep desired height */
     overflow-y: auto;
     border: 1px solid #ddd;
     border-radius: 4px;
+    width: 100%; /* Ensure it fills the available width */
+    box-sizing: border-box;
 }
 
 #entriesTable {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9em;
-    table-layout: fixed; /* Helps with consistent column widths */
+    font-size: 0.9em; /* Default font size */
+    table-layout: fixed;
 }
 
 #entriesTable thead th {
     background-color: #e9ecef;
     border-bottom: 2px solid #ccc;
-    padding: 8px;
+    padding: 8px; /* Default padding */
     text-align: left;
     font-weight: bold;
     color: #333;
@@ -274,7 +291,7 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 }
 
 #entriesTable tbody td {
-    padding: 6px 8px;
+    padding: 6px 8px; /* Default padding */
     vertical-align: middle; /* Align checkbox and text */
     overflow: hidden; /* Prevent long text overflow */
     white-space: nowrap;
@@ -282,7 +299,7 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 }
 
 #entriesTable tbody td:first-child { /* Checkbox column */
-    width: 40px; /* Fixed width for checkbox */
+    width: 40px; /* Default width for checkbox */
     text-align: center;
     padding: 4px;
 }
@@ -292,11 +309,10 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     transform: scale(1.1);
 }
 
-/* Column Widths (Adjust as needed) */
+/* Default Column Widths (Larger Screens) */
 #entriesTable th:nth-child(1), #entriesTable td:nth-child(1) { width: 40px; } /* Checkbox */
 #entriesTable th:nth-child(2), #entriesTable td:nth-child(2) { width: 50px; } /* Plot */
-/* **MODIFIED:** Give species column a specific width instead of auto */
-#entriesTable th:nth-child(3), #entriesTable td:nth-child(3) { width: 25%; } /* Species (e.g., 25% or adjust as needed) */
+#entriesTable th:nth-child(3), #entriesTable td:nth-child(3) { width: 25%; } /* Species */
 #entriesTable th:nth-child(4), #entriesTable td:nth-child(4) { width: 55px; } /* DBH */
 #entriesTable th:nth-child(5), #entriesTable td:nth-child(5) { width: 55px; } /* Logs */
 #entriesTable th:nth-child(6), #entriesTable td:nth-child(6) { width: 50px; } /* Cut */
@@ -309,6 +325,89 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     color: #6c757d;
     padding: 15px;
     background-color: #fff !important; /* Override striping */
+}
+
+/* --- Compass Styles --- */
+#compassContainer {
+    position: fixed; /* Overlay on the whole screen */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center it */
+    width: 250px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    text-align: center;
+    z-index: 1001; /* Make sure it's above modal overlay if both could show */
+    display: none; /* Initially hidden */
+    flex-direction: column; /* Stack elements vertically */
+    align-items: center;
+    gap: 15px;
+}
+#compass {
+    width: 150px;
+    height: 150px;
+    border: 2px solid #333;
+    border-radius: 50%;
+    position: relative;
+    background: radial-gradient(circle, #eee, #fff); /* Simple background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#compassNeedle {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 70px solid red; /* The main pointer */
+    position: absolute;
+    top: 5px; /* Position tip near top */
+    left: 50%;
+    transform-origin: 50% 70px; /* Rotate around the base */
+    transform: translateX(-50%) rotate(0deg); /* Start pointing up */
+    transition: transform 0.3s ease-out; /* Smooth rotation */
+}
+/* Add a simple tail */
+#compassNeedle::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 40px solid #555; /* Tail color */
+    bottom: -40px; /* Position below the base */
+    left: 50%;
+    transform: translateX(-50%);
+}
+#compassInfo {
+    font-size: 1em;
+    color: #333;
+}
+#compassHeading {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+#compassSource {
+    font-size: 0.8em;
+    color: #666;
+}
+#compassInfo p {
+    font-size: 0.8em;
+    color: #888;
+    margin-top: 5px;
+    max-width: 200px;
+}
+#closeCompassBtn {
+    background-color: #6c757d;
+    padding: 6px 12px;
+    font-size: 0.9em;
+}
+#closeCompassBtn:hover {
+    background-color: #5a6268;
 }
 
 /* Species Management Styles */
@@ -353,27 +452,27 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
 /* --- Modal Styles --- */
 .modal-overlay {
-    position: fixed; /* Stay in place */
+    position: fixed;
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
-    z-index: 1000; /* Sit on top */
-    display: flex; /* Use flexbox for centering */
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .modal-content {
     background-color: #fefefe;
-    margin: auto; /* Necessary for older browsers */
+    margin: auto;
     padding: 20px;
     border: 1px solid #888;
     border-radius: 5px;
-    width: 85%; /* Could be more specific */
-    max-width: 400px; /* Maximum width */
+    width: 85%;
+    max-width: 400px;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
     text-align: center;
 }
@@ -395,10 +494,10 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
 .fc-options {
     display: flex;
-    flex-direction: column; /* Stack options vertically */
-    align-items: flex-start; /* Align radio buttons left */
+    flex-direction: column;
+    align-items: flex-start;
     margin-bottom: 20px;
-    padding-left: 20%; /* Indent options a bit */
+    padding-left: 20%;
 }
 
 .fc-options label {
@@ -418,7 +517,7 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
 .modal-buttons {
     display: flex;
-    justify-content: space-around; /* Space out buttons */
+    justify-content: space-around;
     gap: 10px;
     margin-top: 10px;
 }
@@ -434,5 +533,88 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 #cancelFcBtn:hover {
     background-color: #5a6268;
 }
+
+
+/* --- START OF MOBILE STYLES (Media Query) --- */
+@media (max-width: 600px) {
+
+    /* Adjust top padding and button position for mobile */
+    #entryView .output-section {
+        padding: 10px; /* Standard mobile padding */
+        padding-top: 45px; /* Reduced top padding for smaller control bar */
+    }
+
+    .output-controls {
+        top: 10px; /* Adjust to match mobile padding */
+        left: 10px;
+        right: 10px;
+        height: auto; /* Let height be determined by buttons */
+        /* Flex properties are inherited */
+    }
+
+    /* Control button size adjustments if needed */
+    .control-button {
+        padding: 5px 8px;
+        font-size: 0.8em; /* Slightly smaller font */
+    }
+
+    /* Adjust table column widths for smaller screens */
+    #entriesTable th:nth-child(1),
+    #entriesTable td:nth-child(1) { width: 35px; } /* Checkbox */
+    #entriesTable th:nth-child(2),
+    #entriesTable td:nth-child(2) { width: 45px; } /* Plot */
+    #entriesTable th:nth-child(3),
+    #entriesTable td:nth-child(3) { width: 40%; } /* Species percentage */
+    #entriesTable th:nth-child(4),
+    #entriesTable td:nth-child(4) { width: 48px; } /* DBH */
+    #entriesTable th:nth-child(5),
+    #entriesTable td:nth-child(5) { width: 48px; } /* Logs */
+    #entriesTable th:nth-child(6),
+    #entriesTable td:nth-child(6) { width: 45px; } /* Cut */
+
+    /* Adjust font size in table slightly */
+    #entriesTable {
+        font-size: 0.85em;
+    }
+     #entriesTable tbody td, #entriesTable thead th {
+        padding: 5px 6px;
+    }
+
+     /* Optional word wrap for species */
+    /*
+    #entriesTable td:nth-child(3) {
+        white-space: normal;
+        word-break: break-word;
+    }
+    */
+
+    /* Make compass slightly smaller on mobile */
+     #compassContainer {
+        width: 220px;
+        padding: 15px;
+    }
+    #compass {
+        width: 120px;
+        height: 120px;
+    }
+    #compassNeedle {
+        border-left-width: 8px;
+        border-right-width: 8px;
+        border-bottom-width: 55px; /* Shorter needle */
+        transform-origin: 50% 55px; /* Adjust origin */
+    }
+     #compassNeedle::after {
+        border-left-width: 6px;
+        border-right-width: 6px;
+        border-top-width: 30px;
+        bottom: -30px;
+    }
+     #compassInfo p {
+        font-size: 0.75em;
+    }
+
+}
+/* --- End of Media Query Block --- */
+
 
 /* --- END OF FILE style.css --- */
