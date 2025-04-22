@@ -286,7 +286,7 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     height: 30px; /* Approximate height of buttons */
     box-sizing: border-box;
 }
-.control-button { /* Styles for buttons within output-controls */
+.control-button { /* Styles for buttons within output-controls AND other specific buttons */
     padding: 5px 10px; /* Slightly smaller padding */
     font-size: 0.85em;
     margin: 0; /* Remove default margins if any */
@@ -548,6 +548,34 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 /* --- END: Update Notification Bar Styles --- */
 
 
+/* --- START: Manual Update Check Styles --- */
+.update-check-container {
+    text-align: center;
+    padding: 8px 0; /* Add some vertical padding */
+    margin-bottom: 15px; /* Space below */
+    border-bottom: 1px solid #eee; /* Separator */
+}
+.update-check-container .control-button {
+    /* Uses existing .control-button styles */
+    background-color: #17a2b8; /* Example: Info blue color */
+    border-color: #17a2b8;
+    padding: 6px 12px; /* Slightly larger padding */
+}
+.update-check-container .control-button:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+}
+.update-check-status {
+    display: inline-block; /* Allow margin */
+    margin-left: 10px;
+    font-size: 0.85em;
+    color: #555;
+    font-style: italic;
+    vertical-align: middle; /* Align with button */
+}
+/* --- END: Manual Update Check Styles --- */
+
+
 /* --- START: Tree Key Modal Styles --- */
 .modal-overlay {
     position: fixed; /* Stay in place */
@@ -738,6 +766,11 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
         font-size: 1.6em;
         top: 5px;
         right: 8px;
+    }
+
+    /* Adjust update check status text size */
+    .update-check-status {
+        font-size: 0.8em;
     }
 }
 /* --- End of Media Query Block --- */
