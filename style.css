@@ -544,4 +544,82 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 }
 /* --- End of Media Query Block --- */
 
+/* --- START: Update Notification Bar Styles --- */
+
+.update-notification {
+    position: fixed; /* Keeps it in view when scrolling */
+    bottom: 20px; /* Distance from the bottom edge */
+    left: 50%; /* Start positioning from the horizontal center */
+    transform: translateX(-50%); /* Shift left by half its width to center */
+    background-color: #28a745; /* A nice green for updates */
+    color: white; /* Text color */
+    padding: 12px 20px; /* Space inside the bar */
+    border-radius: 5px; /* Slightly rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    z-index: 1050; /* Make sure it's on top of most other content */
+    display: flex; /* Use flexbox for layout */
+    align-items: center; /* Vertically center items */
+    gap: 15px; /* Space between text and buttons */
+    font-size: 0.95em; /* Slightly smaller text */
+    box-sizing: border-box; /* Include padding in width calculation if needed */
+    /* Initially hidden by inline style, JS controls display */
+}
+
+/* General style for buttons inside the notification */
+.update-notification button {
+    background-color: white; /* Button background */
+    color: #28a745; /* Button text color (matches bar) */
+    border: 1px solid #ccc; /* Light border */
+    padding: 5px 10px; /* Button padding */
+    border-radius: 4px; /* Button corner rounding */
+    cursor: pointer; /* Hand cursor on hover */
+    font-size: 0.9em; /* Button text size */
+    font-weight: bold;
+    transition: background-color 0.2s, color 0.2s; /* Smooth hover */
+    line-height: 1.2; /* Adjust vertical alignment if needed */
+    flex-shrink: 0; /* Prevent buttons from shrinking too much */
+}
+
+/* Hover effect for the main buttons */
+.update-notification button:hover {
+    background-color: #eee; /* Slightly darker on hover */
+}
+
+/* Specific styling for the Dismiss 'X' button */
+.update-notification #updateDismissBtn {
+    background: none; /* No background */
+    border: none; /* No border */
+    color: white; /* White 'X' */
+    font-size: 1.2em; /* Larger 'X' */
+    padding: 0 5px; /* Minimal padding */
+    line-height: 1; /* Align 'X' better vertically */
+    opacity: 0.8; /* Slightly transparent */
+    font-weight: normal; /* Not bold */
+}
+
+/* Hover effect for the Dismiss button */
+.update-notification #updateDismissBtn:hover {
+    opacity: 1; /* Fully opaque on hover */
+    background: none; /* Ensure no background hover effect */
+}
+
+/* --- Responsive Adjustments for Update Bar --- */
+@media (max-width: 600px) {
+    .update-notification {
+        width: 90%; /* Take more width, leave small margins */
+        bottom: 10px; /* Closer to bottom edge */
+        padding: 10px 15px; /* Smaller padding */
+        font-size: 0.9em; /* Smaller text */
+        gap: 10px; /* Less space between items */
+        flex-wrap: wrap; /* Allow wrapping if needed, though unlikely */
+        justify-content: center; /* Center items if they wrap */
+    }
+
+    .update-notification button {
+        padding: 4px 8px; /* Slightly smaller buttons */
+    }
+}
+
+/* --- END: Update Notification Bar Styles --- */
+
 /* --- END OF FILE style.css --- */
