@@ -202,6 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Update Notification elements (already declared outside DOMContentLoaded) ---
     const updateNotification = document.getElementById('updateNotification'); // Redeclare here for scope within DOMContentLoaded if needed, or rely on outer scope
 
+    // --- Tree Key Modal Elements ---
+    const showTreeKeyBtn = document.getElementById('showTreeKeyBtn');
+    const treeKeyModal = document.getElementById('treeKeyModal');
+    const closeTreeKeyBtn = document.getElementById('closeTreeKeyBtn');
+    const closeTreeKeyBtnBottom = document.getElementById('closeTreeKeyBtnBottom'); // Optional bottom close button
+
     // --- Data Storage ---
     let collectedData = [];
     const STORAGE_KEY = 'timberTallyTempSession';
@@ -582,6 +588,42 @@ document.addEventListener('DOMContentLoaded', () => {
     function startCompass() { if(!compassContainer||!compassNeedle||!compassHeading||!compassSource){alert("Compass UI elements missing.");return;} compassContainer.style.display='flex';compassHeading.textContent=`---°`;compassSource.textContent=` (Initializing...)`; orientationHandler=handleOrientationEvent; if('ondeviceorientationabsolute' in window){console.log("Using deviceorientationabsolute");window.addEventListener('deviceorientationabsolute',orientationHandler,true);}else if('ondeviceorientation' in window){console.log("Using deviceorientation");window.addEventListener('deviceorientation',orientationHandler,true);}else{alert("Device orientation events are not supported.");compassHeading.textContent=`N/A`;compassSource.textContent=` (Unsupported)`;}}
     if(closeCompassBtn){closeCompassBtn.addEventListener('click',()=>{ if(!compassContainer) return; compassContainer.style.display='none'; if(orientationHandler){console.log("Removing orientation listener.");if('ondeviceorientationabsolute' in window)window.removeEventListener('deviceorientationabsolute',orientationHandler,true); if('ondeviceorientation' in window)window.removeEventListener('deviceorientation',orientationHandler,true); orientationHandler=null;}}); } else { console.error("closeCompassBtn not found"); }
     // --- End Compass Logic ---
+
+
+    // --- Event Listeners (Tree Key Modal) ---
+    if (showTreeKeyBtn && treeKeyModal) {
+        showTreeKeyBtn.addEventListener('click', () => {
+            treeKeyModal.style.display = 'flex'; // Use 'flex' to enable centering via CSS
+        });
+    } else {
+        console.warn("Tree Key Button or Modal not found");
+    }
+
+    // Function to close the modal
+    const closeKeyModal = () => {
+        if (treeKeyModal) {
+            treeKeyModal.style.display = 'none';
+        }
+    };
+
+    // Add listeners to close buttons
+    if (closeTreeKeyBtn) {
+        closeTreeKeyBtn.addEventListener('click', closeKeyModal);
+    }
+    if (closeTreeKeyBtnBottom) { // Check if the optional bottom button exists
+        closeTreeKeyBtnBottom.addEventListener('click', closeKeyModal);
+    }
+
+    // Optional: Close modal if clicking on the overlay (outside content)
+    if (treeKeyModal) {
+        treeKeyModal.addEventListener('click', (event) => {
+            // Check if the click was directly on the overlay, not the content inside
+            if (event.target === treeKeyModal) {
+                closeKeyModal();
+            }
+        });
+    }
+    // --- End Tree Key Modal Logic ---
 
 
     // --- Initial Setup ---
