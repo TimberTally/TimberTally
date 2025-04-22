@@ -7,6 +7,7 @@ A Progressive Web App (PWA) designed for simple and efficient offline-first coll
 This application allows users, such as foresters, researchers, or landowners, to quickly record timber data in the field, even without an internet connection. The data is stored locally and can be exported as a comprehensive CSV file when needed.
 
 *Developed by: James Baunach*
+
 *Contact: james.baunach@gmail.com*
 
 ## License
