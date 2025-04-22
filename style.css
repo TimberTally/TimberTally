@@ -29,14 +29,18 @@ h1 {
     box-sizing: border-box;
 }
 
-/* MODIFIED: Output Section padding for controls */
+/* Adjust output section for controls */
 #entryView .output-section {
-    position: relative; /* Context for controls positioning */
+    position: relative;
     padding-top: 55px; /* Make space for the control bar */
 }
 
+/* General Input Group Styling */
 #entryView .input-group {
     margin-bottom: 12px;
+}
+#entryView .input-group:last-child {
+    margin-bottom: 0; /* Remove margin from last group in a section */
 }
 
 label {
@@ -62,6 +66,7 @@ select, textarea, input[type="text"] {
     box-sizing: border-box;
     font-size: 1em;
     font-family: inherit;
+    background-color: #fff; /* Ensure background color */
 }
 
 textarea {
@@ -69,24 +74,32 @@ textarea {
     min-height: 40px;
 }
 
-/* Plot Number Section Styles */
-.plot-number-section {
+/* Plot Number & Settings Header Styles */
+.plot-settings-header {
     display: flex;
+    justify-content: space-between; /* Push items apart */
     align-items: center;
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 1px solid #eee;
+    gap: 10px; /* Gap between plot counter and settings button */
+}
+
+.plot-number-section {
+    display: flex;
+    align-items: center;
+    /* Removed specific margins/borders, handled by parent */
     gap: 10px;
+    flex-grow: 1; /* Allow plot number to take available space */
 }
 .plot-number-label {
     font-weight: bold;
     color: #555;
     font-size: 1em;
     margin-bottom: 0;
-    flex-shrink: 0;
+    flex-shrink: 0; /* Prevent label from shrinking */
 }
 .plot-counter-group {
-    margin: 0;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -116,10 +129,50 @@ textarea {
     border: 1px solid #dee2e6;
     border-radius: 4px;
     background-color: #f8f9fa;
-    margin: 0;
+    margin: 0; /* Remove default margins */
 }
 
-/* Condensed Input Row Styles */
+/* Settings Toggle Button Style */
+.settings-toggle-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0; /* Don't let it shrink */
+    line-height: 1.4; /* Adjust line height for better vertical alignment */
+}
+.settings-toggle-btn:hover {
+    background-color: #5a6268;
+}
+.settings-toggle-btn[aria-expanded="true"] {
+    background-color: #5a6268; /* Darker when open */
+}
+
+/* Styles specific to the Settings Section */
+#settingsSection {
+    /* Uses .collapsible-section styles */
+    background-color: #f8f9fa; /* Light grey background when collapsed/opening */
+}
+#settingsSection:not([hidden]) {
+    background-color: #fff; /* White background when open */
+    border: 1px solid #dee2e6; /* Border when open */
+    margin-top: 10px; /* Space above when open */
+}
+#settingsSection h2 {
+    font-size: 1.2em;
+    text-align: center;
+    margin-bottom: 15px;
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+/* Condensed Input Row Styles (Cut/Location) */
 .input-row-condensed {
     display: flex;
     flex-wrap: wrap;
@@ -134,13 +187,11 @@ textarea {
 .cut-checkbox-group {
     display: flex;
     align-items: center;
-    margin: 0;
 }
 .cut-checkbox-group input[type="checkbox"] {
     margin-right: 6px;
-    width: auto;
+    width: auto; /* Let browser decide */
     height: auto;
-    box-sizing: content-box;
     transform: scale(1.2);
     cursor: pointer;
     flex-shrink: 0;
@@ -148,23 +199,19 @@ textarea {
 .cut-checkbox-group label {
     margin-bottom: 0;
     font-weight: normal;
-    display: inline-block;
-    flex-basis: auto;
-    flex-grow: 0;
-    font-size: 1em;
-    color: #333;
     cursor: pointer;
+    color: #333;
+    font-size: 1em;
 }
 .location-group {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-grow: 1;
-    min-width: 150px;
+    flex-grow: 1; /* Take remaining space */
+    min-width: 150px; /* Prevent excessive squishing */
 }
 #getLocationBtn {
     flex-shrink: 0;
-    margin: 0;
     padding: 6px 10px;
     font-size: 0.9em;
 }
@@ -175,14 +222,16 @@ textarea {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex-grow: 1;
+    flex-grow: 1; /* Take space within its group */
     background-color: #f8f9fa;
     padding: 4px 6px;
     border-radius: 3px;
     border: 1px solid #eee;
+    min-width: 80px; /* Ensure it has some base width */
+    text-align: center;
 }
 
-/* Button Section */
+/* Main Button Section */
 .button-section {
     text-align: center;
     padding: 10px 15px;
@@ -190,13 +239,8 @@ textarea {
     flex-wrap: wrap;
     justify-content: center;
     gap: 8px;
-    background-color: #fff;
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 10px;
 }
-/* General button styles */
-button {
+button { /* General button style */
     background-color: #007bff;
     color: white;
     border: none;
@@ -205,7 +249,7 @@ button {
     cursor: pointer;
     font-size: 0.95em;
     transition: background-color 0.2s ease;
-    vertical-align: middle;
+    vertical-align: middle; /* Align text */
 }
 button:hover { background-color: #0056b3; }
 button:disabled { background-color: #cccccc; cursor: not-allowed; }
@@ -213,26 +257,24 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 /* Specific Button Styles */
 #viewTallyBtn { background-color: #ffc107; color: #333; }
 #viewTallyBtn:hover { background-color: #e0a800; }
-#viewTallyBtn:disabled { background-color: #ffeeba; }
+#viewTallyBtn:disabled { background-color: #ffeeba; color: #856404; }
 #backToEntryBtn { background-color: #6c757d; }
 #backToEntryBtn:hover { background-color: #5a6268; }
-.delete-button { background-color: #dc3545; }
+.delete-button { background-color: #dc3545; } /* Used for Delete Selected & Delete Project */
 .delete-button:hover { background-color: #c82333; }
-.delete-button:disabled { background-color: #e07e87; }
-.compass-button { background-color: #17a2b8; } /* Teal color */
+.delete-button:disabled { background-color: #f5c6cb; color: #721c24; }
+.compass-button { background-color: #17a2b8; } /* Used for Show Compass */
 .compass-button:hover { background-color: #138496; }
 
 /* Output Section (Recent Entries Table) */
 #entryView .output-section h2 {
     color: #333;
-    text-align: center; /* Keep H2 centered */
+    text-align: center;
     margin: 0 0 10px 0; /* Standard margin below H2 */
     font-size: 1.2em;
-    white-space: nowrap;
-    box-sizing: border-box;
 }
 
-/* **NEW:** Output Controls Container */
+/* Output Controls Container (Delete/Compass Buttons) */
 .output-controls {
     position: absolute;
     top: 15px;  /* Position from the top padding edge */
@@ -244,36 +286,31 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     height: 30px; /* Approximate height of buttons */
     box-sizing: border-box;
 }
-
-/* Adjust control buttons */
-.control-button {
+.control-button { /* Styles for buttons within output-controls */
     padding: 5px 10px; /* Slightly smaller padding */
     font-size: 0.85em;
     margin: 0; /* Remove default margins if any */
 }
-/* Removed .delete-button-container styles */
 
 /* Table Styles */
 .table-container {
-    max-height: 550px; /* Keep desired height */
+    max-height: 550px; /* Adjust as needed */
     overflow-y: auto;
     border: 1px solid #ddd;
     border-radius: 4px;
-    width: 100%; /* Ensure it fills the available width */
+    width: 100%;
     box-sizing: border-box;
 }
-
 #entriesTable {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9em; /* Default font size */
-    table-layout: fixed;
+    font-size: 0.9em;
+    table-layout: fixed; /* Prevent columns from resizing based on content */
 }
-
 #entriesTable thead th {
     background-color: #e9ecef;
     border-bottom: 2px solid #ccc;
-    padding: 8px; /* Default padding */
+    padding: 8px;
     text-align: left;
     font-weight: bold;
     color: #333;
@@ -281,25 +318,17 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     top: 0;
     z-index: 1;
 }
-
-#entriesTable tbody tr {
-    border-bottom: 1px solid #eee;
-}
-
-#entriesTable tbody tr:nth-child(even) {
-    background-color: #f8f9fa; /* Subtle striping */
-}
-
+#entriesTable tbody tr { border-bottom: 1px solid #eee; }
+#entriesTable tbody tr:nth-child(even) { background-color: #f8f9fa; } /* Subtle striping */
 #entriesTable tbody td {
-    padding: 6px 8px; /* Default padding */
-    vertical-align: middle; /* Align checkbox and text */
+    padding: 6px 8px;
+    vertical-align: middle;
     overflow: hidden; /* Prevent long text overflow */
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-
 #entriesTable tbody td:first-child { /* Checkbox column */
-    width: 40px; /* Default width for checkbox */
+    width: 40px;
     text-align: center;
     padding: 4px;
 }
@@ -307,18 +336,15 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     margin: 0;
     vertical-align: middle;
     transform: scale(1.1);
+    cursor: pointer;
 }
-
-/* Default Column Widths (Larger Screens) */
+/* Column Widths */
 #entriesTable th:nth-child(1), #entriesTable td:nth-child(1) { width: 40px; } /* Checkbox */
 #entriesTable th:nth-child(2), #entriesTable td:nth-child(2) { width: 50px; } /* Plot */
-#entriesTable th:nth-child(3), #entriesTable td:nth-child(3) { width: 25%; } /* Species */
+#entriesTable th:nth-child(3), #entriesTable td:nth-child(3) { width: 25%; min-width: 80px;} /* Species */
 #entriesTable th:nth-child(4), #entriesTable td:nth-child(4) { width: 55px; } /* DBH */
 #entriesTable th:nth-child(5), #entriesTable td:nth-child(5) { width: 55px; } /* Logs */
 #entriesTable th:nth-child(6), #entriesTable td:nth-child(6) { width: 50px; } /* Cut */
-
-
-/* Style for the "No entries" row */
 #noEntriesRow td {
     text-align: center;
     font-style: italic;
@@ -329,292 +355,193 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
 /* --- Compass Styles --- */
 #compassContainer {
-    position: fixed; /* Overlay on the whole screen */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); /* Center it */
-    width: 250px;
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    text-align: center;
-    z-index: 1001; /* Make sure it's above modal overlay if both could show */
-    display: none; /* Initially hidden */
-    flex-direction: column; /* Stack elements vertically */
-    align-items: center;
-    gap: 15px;
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 250px; background-color: rgba(255, 255, 255, 0.95); border: 1px solid #ccc;
+    border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); padding: 20px;
+    text-align: center; z-index: 1001; display: none; flex-direction: column;
+    align-items: center; gap: 15px;
 }
 #compass {
-    width: 150px;
-    height: 150px;
-    border: 2px solid #333;
-    border-radius: 50%;
-    position: relative;
-    background: radial-gradient(circle, #eee, #fff); /* Simple background */
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 150px; height: 150px; border: 2px solid #333; border-radius: 50%; position: relative;
+    background: radial-gradient(circle, #eee, #fff); display: flex; justify-content: center; align-items: center;
 }
 #compassNeedle {
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-bottom: 70px solid red; /* The main pointer */
-    position: absolute;
-    top: 5px; /* Position tip near top */
-    left: 50%;
-    transform-origin: 50% 70px; /* Rotate around the base */
-    transform: translateX(-50%) rotate(0deg); /* Start pointing up */
+    width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent;
+    border-bottom: 70px solid red; /* Pointer */ position: absolute; top: 5px; left: 50%;
+    transform-origin: 50% 70px; /* Rotate around base */ transform: translateX(-50%) rotate(0deg);
     transition: transform 0.3s ease-out; /* Smooth rotation */
 }
-/* Add a simple tail */
-#compassNeedle::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 40px solid #555; /* Tail color */
-    bottom: -40px; /* Position below the base */
-    left: 50%;
-    transform: translateX(-50%);
+#compassNeedle::after { /* Simple tail */
+    content: ''; position: absolute; width: 0; height: 0; border-left: 8px solid transparent;
+    border-right: 8px solid transparent; border-top: 40px solid #555; /* Tail color */
+    bottom: -40px; /* Position below base */ left: 50%; transform: translateX(-50%);
 }
-#compassInfo {
-    font-size: 1em;
-    color: #333;
+#compassInfo { font-size: 1em; color: #333; }
+#compassHeading { font-weight: bold; font-size: 1.2em; }
+#compassSource { font-size: 0.8em; color: #666; }
+#compassInfo p { font-size: 0.8em; color: #888; margin-top: 5px; max-width: 200px; }
+#closeCompassBtn { background-color: #6c757d; padding: 6px 12px; font-size: 0.9em; }
+#closeCompassBtn:hover { background-color: #5a6268; }
+
+/* --- Project, Species, Settings Management --- */
+.toggle-section { text-align: center; margin: 10px 0; }
+.toggle-button { /* Used for Project/Species toggles */
+    background-color: #6c757d; color: white; padding: 6px 12px; width: auto; font-size: 0.9em; }
+.toggle-button:hover { background-color: #5a6268; }
+.toggle-button[aria-expanded="true"] { background-color: #5a6268; }
+
+.collapsible-section { /* Used for Project/Species/Settings */
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out, border 0.3s ease-out, opacity 0.3s ease-out;
+    max-height: 0;
+    padding-top: 0 !important; /* Use important for transition */
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    border: none;
+    opacity: 0;
+    box-shadow: none;
+    border-radius: 5px; /* Match other sections */
 }
-#compassHeading {
-    font-weight: bold;
-    font-size: 1.2em;
+.collapsible-section:not([hidden]) {
+    max-height: 1000px; /* Large enough */
+    padding: 15px !important; /* Use important for transition */
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+    border: 1px solid #eee;
+    opacity: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
-#compassSource {
-    font-size: 0.8em;
-    color: #666;
+/* Add a specific class for project/species to use input-section look */
+#projectManagementSection, #speciesManagementSection {
+     background-color: #fff; /* White background */
 }
-#compassInfo p {
-    font-size: 0.8em;
-    color: #888;
-    margin-top: 5px;
-    max-width: 200px;
-}
-#closeCompassBtn {
-    background-color: #6c757d;
-    padding: 6px 12px;
-    font-size: 0.9em;
-}
-#closeCompassBtn:hover {
-    background-color: #5a6268;
+#projectManagementSection:not([hidden]),
+#speciesManagementSection:not([hidden]) {
+    border-color: #ddd; /* Slightly darker border like input sections */
 }
 
-/* Species Management Styles */
-.toggle-section { text-align: center; margin: 10px 0; }
-.toggle-button { background-color: #6c757d; color: white; padding: 6px 12px; width: auto; font-size: 0.9em; }
-.toggle-button:hover { background-color: #5a6268; }
-.collapsible-section { overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease-out; max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; border-top: none; border-bottom: none; box-shadow: none; }
-.collapsible-section:not([hidden]) { max-height: 1000px; padding: 15px; margin-bottom: 10px; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
-.input-with-button { display: flex; gap: 5px; }
-.input-with-button input[type="text"] { flex-grow: 1; min-width: 100px; }
-.input-with-button button { flex-shrink: 0; padding: 8px 12px; font-size: 1.1em; line-height: 1; }
-#speciesManagementSection h2 { font-size: 1.2em; text-align: center; margin-bottom: 15px; margin-top: 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+.input-with-button { /* Used in Project/Species */
+    display: flex; gap: 5px; align-items: center;
+}
+.input-with-button input[type="text"], .input-with-button select {
+    flex-grow: 1; min-width: 100px; /* Prevent excessive shrinking */
+}
+.input-with-button button {
+    flex-shrink: 0; padding: 8px 12px; font-size: 1em; line-height: 1; /* Better alignment */
+}
+.input-with-button input[type="file"] {
+    padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em;
+    flex-grow: 1; background-color: #fff; line-height: 1.3; box-sizing: border-box;
+}
+
+/* Headers within collapsible sections */
+#settingsSection h2, #projectManagementSection h2, #speciesManagementSection h2 {
+    font-size: 1.2em; text-align: center; margin-bottom: 15px; margin-top: 0;
+    color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px;
+}
+
+/* Project Management Specifics */
+.project-group { margin-bottom: 15px; }
+#loadProjectBtn, #saveProjectBtn, #loadCsvBtn { padding: 8px 12px; font-size: 0.95em; }
+#deleteProjectBtn { /* Uses .delete-button class */
+    padding: 8px 10px; font-size: 0.9em; line-height: 1; flex-shrink: 0;
+}
+
+/* Species Management Specifics */
 .species-add-group, .species-remove-group { margin-bottom: 15px; }
 #removeSpeciesSelect { width: 100%; margin-bottom: 8px; font-size: 0.95em; border: 1px solid #ccc; border-radius: 4px; min-height: 100px; }
-#removeSpeciesBtn { background-color: #dc3545; display: block; width: 100%; box-sizing: border-box; }
+#removeSpeciesBtn { /* Uses .delete-button style */
+    background-color: #dc3545; display: block; width: 100%; box-sizing: border-box; }
 #removeSpeciesBtn:hover { background-color: #c82333; }
-#speciesMgmtFeedback { /* Uses .feedback-message styles */ }
 
-/* Feedback Message */
-.feedback-message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin: 10px 0; border-radius: 4px; text-align: center; font-size: 0.95em; display: none; transition: opacity 0.5s ease-in-out; opacity: 0; }
+/* Feedback Message (General, Settings, Project, Species) */
+.feedback-message {
+    background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;
+    padding: 8px 10px; margin: 10px 0; border-radius: 4px; text-align: center;
+    font-size: 0.9em; display: none; /* Start hidden */
+    transition: opacity 0.5s ease-in-out; opacity: 0; /* Start transparent */
+    box-sizing: border-box; clear: both;
+}
 .feedback-message.error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
 
 /* Tally View Styles */
+#tallyView { /* Display handled by JS */ }
 #tallyView .tally-section { background-color: #fff; padding: 20px; margin-bottom: 10px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
-#tallyView h1 { color: #333; text-align: center; margin-top: 10px; margin-bottom: 15px; font-size: 1.6em; }
+#tallyView h1 { /* Inherits general h1 style */ }
 #tallyView h2 { text-align: center; color: #333; margin-top: 0; margin-bottom: 15px; font-size: 1.3em; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-#tallyResults { max-height: 60vh; overflow-y: auto; padding: 5px; border: 1px solid #eee; border-radius: 4px; background-color: #f8f9fa; }
+#tallyResults { max-height: 60vh; overflow-y: auto; padding: 10px; border: 1px solid #eee; border-radius: 4px; background-color: #f8f9fa; }
 #tallyResults .tally-species { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ccc; }
 #tallyResults .tally-species:last-child { border-bottom: none; margin-bottom: 0; }
 #tallyResults h3 { font-size: 1.15em; color: #0056b3; margin-top: 0; margin-bottom: 8px; }
 #tallyResults h4 { font-size: 1.05em; color: #444; margin-top: 0; margin-bottom: 5px; padding-left: 15px; }
 #tallyResults .tally-log-item { font-size: 0.95em; color: #555; margin-bottom: 3px; padding-left: 30px; }
-#tallyResults .tally-log-item .log-label { font-weight: normal; }
-#tallyResults .tally-log-item .log-count { font-weight: bold; color: #155724; }
+#tallyResults .tally-log-item .log-label { /* Default span style */ }
+#tallyResults .tally-log-item .log-count { font-weight: bold; color: #155724; margin-left: 3px; }
 #tallyResults .no-tally-data { color: #6c757d; font-style: italic; text-align: center; padding: 15px; }
 
 /* Delete All Button Section Styles */
 .delete-all-section { text-align: center; margin-top: 20px; margin-bottom: 15px; padding: 10px; }
-.delete-all-button { background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 1em; font-weight: bold; transition: background-color 0.2s ease; }
-.delete-all-button:hover { background-color: #c82333; }
+.delete-all-button { /* Specific class */
+    background-color: #c82333; /* Darker red */ color: white; border: none; padding: 10px 20px; border-radius: 4px;
+    cursor: pointer; font-size: 1em; font-weight: bold; transition: background-color 0.2s ease; }
+.delete-all-button:hover { background-color: #a71d2a; }
 .delete-all-button:disabled { background-color: #e07e87; cursor: not-allowed; opacity: 0.7; }
 
-/* --- Modal Styles --- */
-.modal-overlay {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    border-radius: 5px;
-    width: 85%;
-    max-width: 400px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-    text-align: center;
-}
-
-.modal-content h2 {
-    margin-top: 0;
-    font-size: 1.3em;
-    color: #333;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-}
-
-.modal-content p {
-    margin-bottom: 15px;
-    font-size: 0.95em;
-    color: #555;
-}
-
-.fc-options {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 20px;
-    padding-left: 20%;
-}
-
-.fc-options label {
-    margin-bottom: 8px;
-    font-weight: normal;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    font-size: 1em;
-}
-
-.fc-options input[type="radio"] {
-    margin-right: 10px;
-    transform: scale(1.1);
-    cursor: pointer;
-}
-
-.modal-buttons {
-    display: flex;
-    justify-content: space-around;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.modal-buttons button {
-    padding: 8px 15px;
-    font-size: 0.95em;
-}
-
-#cancelFcBtn {
-    background-color: #6c757d;
-}
-#cancelFcBtn:hover {
-    background-color: #5a6268;
-}
-
+/* Modal Styles REMOVED */
 
 /* --- START OF MOBILE STYLES (Media Query) --- */
 @media (max-width: 600px) {
+    body { font-size: 14px; margin: 5px; }
+    h1 { font-size: 1.4em; margin-bottom: 10px; }
 
-    /* Adjust top padding and button position for mobile */
-    #entryView .output-section {
-        padding: 10px; /* Standard mobile padding */
-        padding-top: 45px; /* Reduced top padding for smaller control bar */
-    }
+    /* Adjust header layout & button size */
+    .plot-settings-header { padding-bottom: 5px; margin-bottom: 10px; flex-wrap: wrap; }
+    .settings-toggle-btn { font-size: 0.85em; padding: 5px 8px; }
+    .plot-number-section { gap: 5px; }
+    .plot-counter-btn { width: 28px; height: 28px; font-size: 1.1em; }
+    #plotNumberDisplay { font-size: 1em; padding: 4px 6px; }
 
-    .output-controls {
-        top: 10px; /* Adjust to match mobile padding */
-        left: 10px;
-        right: 10px;
-        height: auto; /* Let height be determined by buttons */
-        /* Flex properties are inherited */
-    }
+    #entryView .output-section { padding: 10px; padding-top: 45px; }
+    .output-controls { top: 10px; left: 10px; right: 10px; height: auto; }
+    .control-button { padding: 5px 8px; font-size: 0.8em; }
+    #entryView .input-section, #entryView .button-section, .collapsible-section:not([hidden]) { padding: 10px; }
 
-    /* Control button size adjustments if needed */
-    .control-button {
-        padding: 5px 8px;
-        font-size: 0.8em; /* Slightly smaller font */
-    }
+    /* Adjust table for small screens */
+    #entriesTable th:nth-child(1), #entriesTable td:nth-child(1) { width: 35px; } /* Checkbox */
+    #entriesTable th:nth-child(2), #entriesTable td:nth-child(2) { width: 40px; } /* Plot */
+    #entriesTable th:nth-child(3), #entriesTable td:nth-child(3) { width: 35%; min-width: 70px;} /* Species */
+    #entriesTable th:nth-child(4), #entriesTable td:nth-child(4) { width: 45px; } /* DBH */
+    #entriesTable th:nth-child(5), #entriesTable td:nth-child(5) { width: 45px; } /* Logs */
+    #entriesTable th:nth-child(6), #entriesTable td:nth-child(6) { width: 40px; } /* Cut */
+    #entriesTable { font-size: 0.85em; }
+    #entriesTable tbody td, #entriesTable thead th { padding: 4px 5px; } /* Tighter padding */
 
-    /* Adjust table column widths for smaller screens */
-    #entriesTable th:nth-child(1),
-    #entriesTable td:nth-child(1) { width: 35px; } /* Checkbox */
-    #entriesTable th:nth-child(2),
-    #entriesTable td:nth-child(2) { width: 45px; } /* Plot */
-    #entriesTable th:nth-child(3),
-    #entriesTable td:nth-child(3) { width: 40%; } /* Species percentage */
-    #entriesTable th:nth-child(4),
-    #entriesTable td:nth-child(4) { width: 48px; } /* DBH */
-    #entriesTable th:nth-child(5),
-    #entriesTable td:nth-child(5) { width: 48px; } /* Logs */
-    #entriesTable th:nth-child(6),
-    #entriesTable td:nth-child(6) { width: 45px; } /* Cut */
+    /* Adjust form elements */
+    select, textarea, input[type="text"], .input-with-button input[type="file"] { font-size: 0.95em; padding: 6px; }
+    button { padding: 7px 12px; font-size: 0.9em; }
+    .input-with-button button { padding: 7px 10px; font-size: 0.95em; }
+    #deleteProjectBtn { padding: 7px 8px; font-size: 0.85em; }
+    #getLocationBtn { padding: 5px 8px; font-size: 0.85em; }
+    .delete-all-button { padding: 8px 15px; font-size: 0.95em; }
 
-    /* Adjust font size in table slightly */
-    #entriesTable {
-        font-size: 0.85em;
-    }
-     #entriesTable tbody td, #entriesTable thead th {
-        padding: 5px 6px;
-    }
+    /* Adjust condensed row */
+    .input-row-condensed { padding: 5px 0; }
+    .cut-checkbox-group label { font-size: 0.95em; }
+    #locationStatus { font-size: 0.8em; padding: 3px 5px; }
 
-     /* Optional word wrap for species */
-    /*
-    #entriesTable td:nth-child(3) {
-        white-space: normal;
-        word-break: break-word;
-    }
-    */
+    /* Adjust Compass */
+     #compassContainer { width: 200px; padding: 15px; }
+    #compass { width: 120px; height: 120px; }
+    #compassNeedle { border-left-width: 8px; border-right-width: 8px; border-bottom-width: 55px; transform-origin: 50% 55px; top: 2px; }
+    #compassNeedle::after { border-left-width: 6px; border-right-width: 6px; border-top-width: 30px; bottom: -30px; }
+    #compassInfo p { font-size: 0.75em; max-width: 180px; }
 
-    /* Make compass slightly smaller on mobile */
-     #compassContainer {
-        width: 220px;
-        padding: 15px;
-    }
-    #compass {
-        width: 120px;
-        height: 120px;
-    }
-    #compassNeedle {
-        border-left-width: 8px;
-        border-right-width: 8px;
-        border-bottom-width: 55px; /* Shorter needle */
-        transform-origin: 50% 55px; /* Adjust origin */
-    }
-     #compassNeedle::after {
-        border-left-width: 6px;
-        border-right-width: 6px;
-        border-top-width: 30px;
-        bottom: -30px;
-    }
-     #compassInfo p {
-        font-size: 0.75em;
-    }
-
+    /* Adjust Tally View */
+    #tallyView h1 { font-size: 1.4em; } #tallyView h2 { font-size: 1.1em; }
+    #tallyResults h3 { font-size: 1.05em; } #tallyResults h4 { font-size: 0.95em; padding-left: 10px; }
+    #tallyResults .tally-log-item { font-size: 0.9em; padding-left: 20px; }
 }
 /* --- End of Media Query Block --- */
-
 
 /* --- END OF FILE style.css --- */
