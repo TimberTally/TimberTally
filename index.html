@@ -8,6 +8,8 @@
     <link rel="manifest" href="manifest.json">
     <!-- Link to Font Awesome if you want icons, otherwise remove -->
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> -->
+    <link rel="apple-touch-icon" href="icon.png"> <!-- iOS home screen icon -->
+    <meta name="theme-color" content="#007bff"> <!-- Theme color for browser UI -->
 </head>
 <body>
 
@@ -27,20 +29,20 @@
                         <button type="button" id="plotIncrementBtn" class="plot-counter-btn" title="Increment Plot Number">+</button>
                     </div>
                 </div>
-                 <!-- Settings Toggle Button (New!) -->
+                 <!-- Settings Toggle Button -->
                 <button id="toggleSettingsBtn" class="settings-toggle-btn" title="Show Forestry Settings" aria-expanded="false" aria-controls="settingsSection">
-                    Settings ⚙ <!-- Gear icon -->
+                    Settings ⚙
                 </button>
             </div>
 
-            <!-- Settings Section (Initially Hidden - New!) -->
-            <div id="settingsSection" class="collapsible-section" hidden> <!-- Start hidden -->
+            <!-- Settings Section (Initially Hidden) -->
+            <div id="settingsSection" class="collapsible-section" hidden>
                 <h2>Forestry Settings</h2>
                 <div class="input-group">
                     <label for="bafSelect">Basal Area Factor (BAF):</label>
                     <select id="bafSelect">
                         <option value="5">5</option>
-                        <option value="10" selected>10</option> <!-- Default selected -->
+                        <option value="10" selected>10</option>
                         <option value="20">20</option>
                         <option value="30">30</option>
                         <option value="40">40</option>
@@ -49,18 +51,18 @@
                 <div class="input-group">
                     <label for="logRuleSelect">Log Rule (Volume):</label>
                     <select id="logRuleSelect">
-                        <option value="Doyle" selected>Doyle</option> <!-- Default selected -->
+                        <option value="Doyle" selected>Doyle</option>
                         <option value="Scribner">Scribner</option>
                         <option value="International">International 1/4"</option>
                     </select>
                 </div>
-                <div class="input-group" id="formClassGroup"> <!-- Container to show/hide -->
+                <div class="input-group" id="formClassGroup">
                     <label for="formClassSelect">Doyle Form Class:</label>
                     <select id="formClassSelect">
                         <option value="72">72</option>
                         <option value="74">74</option>
                         <option value="76">76</option>
-                        <option value="78" selected>78</option> <!-- Default selected -->
+                        <option value="78" selected>78</option>
                         <option value="80">80</option>
                         <option value="82">82</option>
                     </select>
@@ -111,7 +113,7 @@
         <!-- Button Section -->
         <div class="button-section">
             <button id="submitBtn">Submit Entry</button>
-            <button id="saveCsvBtn" disabled>Save CSV</button> <!-- No longer prompts FC -->
+            <button id="saveCsvBtn" disabled>Save CSV</button>
             <button id="viewTallyBtn" disabled>View Tally</button>
         </div>
 
@@ -170,7 +172,7 @@
         </div>
 
         <!-- === Project Management Section (Initially Hidden) === -->
-        <div id="projectManagementSection" class="input-section collapsible-section" hidden> <!-- Use input-section for consistent look -->
+        <div id="projectManagementSection" class="input-section collapsible-section" hidden>
             <h2>Manage Projects</h2>
             <!-- Project Naming and Saving -->
             <div class="project-group">
@@ -214,7 +216,7 @@
         </div>
 
         <!-- === Species Management Section (Initially Hidden) === -->
-        <div id="speciesManagementSection" class="input-section collapsible-section" hidden> <!-- Use input-section for consistent look -->
+        <div id="speciesManagementSection" class="input-section collapsible-section" hidden>
             <h2>Manage Species</h2>
             <div class="species-add-group">
                 <label for="newSpeciesInput">Add New Species:</label>
@@ -254,7 +256,13 @@
         </div>
     </div> <!-- End of tallyView -->
 
-    <!-- Modal REMOVED -->
+    <!-- === START: Update Notification Bar === -->
+    <div id="updateNotification" class="update-notification" style="display: none;">
+        A new version is available!
+        <button id="updateNowBtn">Update Now</button>
+        <button id="updateDismissBtn" title="Dismiss">X</button>
+    </div>
+    <!-- === END: Update Notification Bar === -->
 
     <script src="script.js" defer></script>
 </body>
