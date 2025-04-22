@@ -488,64 +488,7 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 .delete-all-button:hover { background-color: #a71d2a; }
 .delete-all-button:disabled { background-color: #e07e87; cursor: not-allowed; opacity: 0.7; }
 
-/* Modal Styles REMOVED */
-
-/* --- START OF MOBILE STYLES (Media Query) --- */
-@media (max-width: 600px) {
-    body { font-size: 14px; margin: 5px; }
-    h1 { font-size: 1.4em; margin-bottom: 10px; }
-
-    /* Adjust header layout & button size */
-    .plot-settings-header { padding-bottom: 5px; margin-bottom: 10px; flex-wrap: wrap; }
-    .settings-toggle-btn { font-size: 0.85em; padding: 5px 8px; }
-    .plot-number-section { gap: 5px; }
-    .plot-counter-btn { width: 28px; height: 28px; font-size: 1.1em; }
-    #plotNumberDisplay { font-size: 1em; padding: 4px 6px; }
-
-    #entryView .output-section { padding: 10px; padding-top: 45px; }
-    .output-controls { top: 10px; left: 10px; right: 10px; height: auto; }
-    .control-button { padding: 5px 8px; font-size: 0.8em; }
-    #entryView .input-section, #entryView .button-section, .collapsible-section:not([hidden]) { padding: 10px; }
-
-    /* Adjust table for small screens */
-    #entriesTable th:nth-child(1), #entriesTable td:nth-child(1) { width: 35px; } /* Checkbox */
-    #entriesTable th:nth-child(2), #entriesTable td:nth-child(2) { width: 40px; } /* Plot */
-    #entriesTable th:nth-child(3), #entriesTable td:nth-child(3) { width: 35%; min-width: 70px;} /* Species */
-    #entriesTable th:nth-child(4), #entriesTable td:nth-child(4) { width: 45px; } /* DBH */
-    #entriesTable th:nth-child(5), #entriesTable td:nth-child(5) { width: 45px; } /* Logs */
-    #entriesTable th:nth-child(6), #entriesTable td:nth-child(6) { width: 40px; } /* Cut */
-    #entriesTable { font-size: 0.85em; }
-    #entriesTable tbody td, #entriesTable thead th { padding: 4px 5px; } /* Tighter padding */
-
-    /* Adjust form elements */
-    select, textarea, input[type="text"], .input-with-button input[type="file"] { font-size: 0.95em; padding: 6px; }
-    button { padding: 7px 12px; font-size: 0.9em; }
-    .input-with-button button { padding: 7px 10px; font-size: 0.95em; }
-    #deleteProjectBtn { padding: 7px 8px; font-size: 0.85em; }
-    #getLocationBtn { padding: 5px 8px; font-size: 0.85em; }
-    .delete-all-button { padding: 8px 15px; font-size: 0.95em; }
-
-    /* Adjust condensed row */
-    .input-row-condensed { padding: 5px 0; }
-    .cut-checkbox-group label { font-size: 0.95em; }
-    #locationStatus { font-size: 0.8em; padding: 3px 5px; }
-
-    /* Adjust Compass */
-     #compassContainer { width: 200px; padding: 15px; }
-    #compass { width: 120px; height: 120px; }
-    #compassNeedle { border-left-width: 8px; border-right-width: 8px; border-bottom-width: 55px; transform-origin: 50% 55px; top: 2px; }
-    #compassNeedle::after { border-left-width: 6px; border-right-width: 6px; border-top-width: 30px; bottom: -30px; }
-    #compassInfo p { font-size: 0.75em; max-width: 180px; }
-
-    /* Adjust Tally View */
-    #tallyView h1 { font-size: 1.4em; } #tallyView h2 { font-size: 1.1em; }
-    #tallyResults h3 { font-size: 1.05em; } #tallyResults h4 { font-size: 0.95em; padding-left: 10px; }
-    #tallyResults .tally-log-item { font-size: 0.9em; padding-left: 20px; }
-}
-/* --- End of Media Query Block --- */
-
 /* --- START: Update Notification Bar Styles --- */
-
 .update-notification {
     position: fixed; /* Keeps it in view when scrolling */
     bottom: 20px; /* Distance from the bottom edge */
@@ -602,9 +545,171 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     opacity: 1; /* Fully opaque on hover */
     background: none; /* Ensure no background hover effect */
 }
+/* --- END: Update Notification Bar Styles --- */
 
-/* --- Responsive Adjustments for Update Bar --- */
+
+/* --- START: Tree Key Modal Styles --- */
+.modal-overlay {
+    position: fixed; /* Stay in place */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Dim background */
+    display: flex; /* Use flexbox for centering content */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Make sure it's on top */
+    padding: 15px; /* Padding for smaller screens */
+    box-sizing: border-box;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative; /* For positioning the close button */
+    width: 90%; /* Responsive width */
+    max-width: 650px; /* Max width on larger screens */
+    max-height: 85vh; /* Limit height to prevent overflow */
+    overflow-y: auto; /* Add scrollbar if content exceeds max-height */
+    box-sizing: border-box;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #888;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+.modal-close-btn:hover {
+    color: #333;
+}
+
+.modal-content h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.key-content {
+    font-size: 0.95em;
+    line-height: 1.6;
+    color: #444;
+}
+.key-content hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 15px 0;
+}
+.key-content p {
+    margin-top: 1em;
+    margin-bottom: 0.3em;
+}
+.key-content ul {
+    list-style-type: none;
+    padding-left: 20px;
+    margin-top: 0.3em;
+    margin-bottom: 1em;
+}
+.key-content li {
+    margin-bottom: 0.5em;
+}
+.key-content strong {
+    color: #0056b3; /* Highlight key terms or results */
+}
+.key-content em { /* Style the introductory note */
+    color: #555;
+    font-size: 0.9em;
+}
+.key-content #closeTreeKeyBtnBottom {
+    display: block;
+    margin: 20px auto 0 auto; /* Center button at bottom */
+    background-color: #6c757d; /* Grey close button */
+}
+
+/* Style the trigger button within settings */
+.key-button-container {
+    /* Add any specific spacing if needed */
+}
+#showTreeKeyBtn {
+    /* Style already applied via .control-button and inline style */
+    /* Example: Add green color to make it stand out */
+     background-color: #28a745; /* Green */
+     border-color: #28a745;
+}
+#showTreeKeyBtn:hover {
+     background-color: #218838;
+     border-color: #1e7e34;
+}
+/* --- END: Tree Key Modal Styles --- */
+
+
+/* --- START OF MOBILE STYLES (Media Query) --- */
 @media (max-width: 600px) {
+    body { font-size: 14px; margin: 5px; }
+    h1 { font-size: 1.4em; margin-bottom: 10px; }
+
+    /* Adjust header layout & button size */
+    .plot-settings-header { padding-bottom: 5px; margin-bottom: 10px; flex-wrap: wrap; }
+    .settings-toggle-btn { font-size: 0.85em; padding: 5px 8px; }
+    .plot-number-section { gap: 5px; }
+    .plot-counter-btn { width: 28px; height: 28px; font-size: 1.1em; }
+    #plotNumberDisplay { font-size: 1em; padding: 4px 6px; }
+
+    #entryView .output-section { padding: 10px; padding-top: 45px; }
+    .output-controls { top: 10px; left: 10px; right: 10px; height: auto; }
+    .control-button { padding: 5px 8px; font-size: 0.8em; }
+    #entryView .input-section, #entryView .button-section, .collapsible-section:not([hidden]) { padding: 10px; }
+
+    /* Adjust table for small screens */
+    #entriesTable th:nth-child(1), #entriesTable td:nth-child(1) { width: 35px; } /* Checkbox */
+    #entriesTable th:nth-child(2), #entriesTable td:nth-child(2) { width: 40px; } /* Plot */
+    #entriesTable th:nth-child(3), #entriesTable td:nth-child(3) { width: 35%; min-width: 70px;} /* Species */
+    #entriesTable th:nth-child(4), #entriesTable td:nth-child(4) { width: 45px; } /* DBH */
+    #entriesTable th:nth-child(5), #entriesTable td:nth-child(5) { width: 45px; } /* Logs */
+    #entriesTable th:nth-child(6), #entriesTable td:nth-child(6) { width: 40px; } /* Cut */
+    #entriesTable { font-size: 0.85em; }
+    #entriesTable tbody td, #entriesTable thead th { padding: 4px 5px; } /* Tighter padding */
+
+    /* Adjust form elements */
+    select, textarea, input[type="text"], .input-with-button input[type="file"] { font-size: 0.95em; padding: 6px; }
+    button { padding: 7px 12px; font-size: 0.9em; }
+    .input-with-button button { padding: 7px 10px; font-size: 0.95em; }
+    #deleteProjectBtn { padding: 7px 8px; font-size: 0.85em; }
+    #getLocationBtn { padding: 5px 8px; font-size: 0.85em; }
+    .delete-all-button { padding: 8px 15px; font-size: 0.95em; }
+
+    /* Adjust condensed row */
+    .input-row-condensed { padding: 5px 0; }
+    .cut-checkbox-group label { font-size: 0.95em; }
+    #locationStatus { font-size: 0.8em; padding: 3px 5px; }
+
+    /* Adjust Compass */
+     #compassContainer { width: 200px; padding: 15px; }
+    #compass { width: 120px; height: 120px; }
+    #compassNeedle { border-left-width: 8px; border-right-width: 8px; border-bottom-width: 55px; transform-origin: 50% 55px; top: 2px; }
+    #compassNeedle::after { border-left-width: 6px; border-right-width: 6px; border-top-width: 30px; bottom: -30px; }
+    #compassInfo p { font-size: 0.75em; max-width: 180px; }
+
+    /* Adjust Tally View */
+    #tallyView h1 { font-size: 1.4em; } #tallyView h2 { font-size: 1.1em; }
+    #tallyResults h3 { font-size: 1.05em; } #tallyResults h4 { font-size: 0.95em; padding-left: 10px; }
+    #tallyResults .tally-log-item { font-size: 0.9em; padding-left: 20px; }
+
+    /* Responsive Adjustments for Update Bar */
     .update-notification {
         width: 90%; /* Take more width, leave small margins */
         bottom: 10px; /* Closer to bottom edge */
@@ -614,12 +719,27 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
         flex-wrap: wrap; /* Allow wrapping if needed, though unlikely */
         justify-content: center; /* Center items if they wrap */
     }
-
     .update-notification button {
         padding: 4px 8px; /* Slightly smaller buttons */
     }
-}
 
-/* --- END: Update Notification Bar Styles --- */
+    /* Responsive adjustments for the modal */
+    .modal-content {
+        padding: 15px 20px;
+        max-height: 90vh; /* Allow slightly more height on mobile */
+    }
+    .modal-content h2 {
+        font-size: 1.2em;
+    }
+    .key-content {
+        font-size: 0.9em;
+    }
+    .modal-close-btn {
+        font-size: 1.6em;
+        top: 5px;
+        right: 8px;
+    }
+}
+/* --- End of Media Query Block --- */
 
 /* --- END OF FILE style.css --- */
