@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.jamesbaunach.timbertally",
+    "sha256_cert_fingerprints": ["B5:4D:43:48:2F:77:F9:77:30:89:BF:92:7B:AE:20:FE:11:DA:ED:5C:2F:01:1F:B7:31:F4:F7:46:51:79:98:59"]
+  }
+}]
