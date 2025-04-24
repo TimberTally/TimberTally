@@ -168,8 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const formClassSelect = document.getElementById('formClassSelect');
     const formClassGroup = document.getElementById('formClassGroup');
     const settingsFeedback = document.getElementById('settingsFeedback');
-    const manualUpdateCheckBtn = document.getElementById('manualUpdateCheckBtn'); // *** NEW ***
-    const updateCheckStatus = document.getElementById('updateCheckStatus'); // *** NEW ***
+    const manualUpdateCheckBtn = document.getElementById('manualUpdateCheckBtn');
+    const updateCheckStatus = document.getElementById('updateCheckStatus');
+    const showPrivacyPolicyBtn = document.getElementById('showPrivacyPolicyBtn'); // <<< ADDED HERE
 
    // --- Species Management Elements ---
    const speciesManagementSection = document.getElementById('speciesManagementSection');
@@ -223,12 +224,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const PROJECTS_STORAGE_KEY = 'timberTallyProjects';
     const SETTINGS_STORAGE_KEY = 'timberTallySettings';
 
+    // --- Constants ---
+    const PRIVACY_POLICY_URL = 'https://timbertally.github.io/TimberTally/privacy.html'; // <<< ADDED HERE
+    const BA_CONST = 0.005454;
+
     let currentLocation = null;
     let feedbackTimeout = null;
     let settingsFeedbackTimeout = null;
     let speciesFeedbackTimeout = null;
     let projectFeedbackTimeout = null;
-    let updateStatusTimeout = null; // *** NEW *** For clearing update status
+    let updateStatusTimeout = null; // For clearing update status
     let savedProjects = {}; // Object to hold projects { projectName: [data], ... }
 
     // --- Plot Counter State ---
@@ -240,9 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentBaf = 10;
     let currentLogRule = 'Doyle';
     let currentFormClass = 78;
-
-    // *** Forestry Calculation Constants ***
-    const BA_CONST = 0.005454;
 
    // --- Default Species List ---
    const DEFAULT_SPECIES = [
@@ -553,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             link.setAttribute("href", url); link.setAttribute("download", fName);
             link.style.visibility='hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
-            showFeedback(`CSV Saved (${ruleP}${fcP} BAF${bafP})`);
+            showFeedback(`CSV Saved (${ruleP}${fcP} BAF${selBaf})`);
 
         } catch (error) { console.error("CSV Gen/Download Err:", error); showFeedback(`CSV Error: ${error.message}.`, true, 5000); }
     }
@@ -587,7 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logRuleSelect) logRuleSelect.addEventListener('change', (e) => { currentLogRule = e.target.value; toggleFormClassSelector(); saveSettings(); showSettingsFeedback(`Rule: ${currentLogRule}`, false); checkAndSetLogsForDbh(); });
     if (formClassSelect) formClassSelect.addEventListener('change', (e) => { currentFormClass = parseInt(e.target.value, 10); saveSettings(); showSettingsFeedback(`Doyle FC: ${currentFormClass}`, false); });
 
-    // *** NEW: Manual Update Check Button Listener ***
+    // *** Manual Update Check Button Listener ***
     if (manualUpdateCheckBtn && updateCheckStatus && 'serviceWorker' in navigator) {
         manualUpdateCheckBtn.addEventListener('click', () => {
             if (updateStatusTimeout) clearTimeout(updateStatusTimeout); // Clear previous timeout if any
@@ -641,6 +643,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if(manualUpdateCheckBtn) manualUpdateCheckBtn.disabled = true; // Disable if SW not supported
         if(updateCheckStatus) updateCheckStatus.textContent = 'Updates N/A';
     }
+
+    // <<< ADDED PRIVACY POLICY BUTTON LISTENER >>>
+    if (showPrivacyPolicyBtn) {
+        showPrivacyPolicyBtn.addEventListener('click', () => {
+            window.open(PRIVACY_POLICY_URL, '_blank', 'noopener,noreferrer');
+            // '_blank' opens in a new tab
+            // 'noopener,noreferrer' are security best practices for external links
+        });
+    } else {
+        console.warn("Privacy Policy button element not found.");
+    }
+    // <<< END OF ADDED PRIVACY POLICY BUTTON LISTENER >>>
 
 
     // --- Event Listeners (Species Management) ---
