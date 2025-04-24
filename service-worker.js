@@ -1,7 +1,7 @@
 // --- START OF FILE service-worker.js ---
 
 // V IMPORTANT: Increment this version number with each update!
-const CACHE_NAME = 'timber-tally-cache-v4'; // <--- CHANGE THIS
+const CACHE_NAME = 'timber-tally-cache-v5'; // <--- CHANGE THIS
 
 const urlsToCache = [
   // ... your list of URLs ...
