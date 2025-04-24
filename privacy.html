@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - TimberTally</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; color: #333; }
+        h1, h2 { color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        h1 { text-align: center; }
+        ul { margin-left: 20px; }
+        li { margin-bottom: 10px; }
+        strong { font-weight: bold; }
+        .contact-email { color: #007bff; text-decoration: none; }
+        .last-updated { text-align: center; color: #555; font-style: italic; margin-bottom: 20px; }
+        .section { margin-bottom: 25px; }
+        .emphasis { background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <h1>Privacy Policy for TimberTally</h1>
+    <p class="last-updated">Last Updated: 2024-07-27</p> <!-- CHANGE THIS DATE! -->
+
+    <div class="section">
+        <h2>1. Introduction</h2>
+        <p>This Privacy Policy describes how TimberTally ("the App," "we," "us," or "our") collects, uses, and handles your information when you use our Progressive Web App (PWA). TimberTally is designed for offline-first timber inventory data collection.</p>
+        <p>Your privacy is important to us. This App primarily stores data <span class="emphasis">locally on your own device</span> and does not automatically transmit personal data to us or any third party.</p>
+    </div>
+
+    <div class="section">
+        <h2>2. Information We Collect</h2>
+        <p>TimberTally collects the following types of information, primarily stored locally on your device using your browser's storage mechanisms (like `localStorage`):</p>
+        <ul>
+            <li><strong>Timber Inventory Data (Entered by You):</strong> Plot Number, Tree Species, Diameter at Breast Height (DBH), Log Count, Cut Status, and optional textual Notes associated with each tree entry.</li>
+            <li><strong>GPS Location Data (Optional):</strong> If you choose to use the "Get Location" feature, the App requests access to your device's GPS to record the Latitude and Longitude coordinates at the time of entry. This collection is <span class="emphasis">explicitly initiated by you</span> and requires your permission via browser prompts. Location data is stored locally alongside the corresponding tree entry.</li>
+            <li><strong>Forestry Settings (Saved Locally):</strong> Your selected Basal Area Factor (BAF), Log Rule (Doyle, Scribner, International 1/4"), and Doyle Form Class are saved locally on your device to persist between sessions.</li>
+            <li><strong>Custom Species List (Saved Locally):</strong> Any tree species you add or remove are stored locally on your device.</li>
+            <li><strong>Saved Project Data (Saved Locally):</strong> If you use the "Save Project" feature, the current dataset (Timber Inventory Data) is saved under a name you provide, stored locally on your device.</li>
+            <li><strong>Temporary Session Data (Saved Locally):</strong> The App may temporarily store unsaved entry data locally to allow recovery if the browser is closed unexpectedly. This data is cleared upon successful recovery or user choice.</li>
+            <li><strong>Usage Information (via Service Worker):</strong> The App uses a Service Worker for offline functionality. This involves caching App files (HTML, CSS, JavaScript, icons) locally on your device. It does not collect personal browsing habits outside the App's scope.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>3. How Information is Collected</h2>
+        <ul>
+            <li><strong>Directly from You:</strong> Most data (plot info, tree details, notes, settings, project names, species management) is collected when you manually enter it into the App's interface.</li>
+            <li><strong>From Your Device (with Permission):</strong> GPS coordinates are collected from your device's location services <span class="emphasis">only when you explicitly click the "Get Location" button</span> and grant permission through your browser. Device orientation data is collected (if supported and permission granted) when you activate the compass feature.</li>
+            <li><strong>Automatically (Locally):</strong> Settings, custom species lists, saved projects, and temporary session data are stored automatically in your browser's local storage as you use the App. Cached App files are managed by the Service Worker.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>4. How Information is Used</h2>
+        <p>The information collected is used solely for the following purposes:</p>
+        <ul>
+            <li><strong>Core App Functionality:</strong> To record, store (locally), display, and manage your timber inventory data.</li>
+            <li><strong>Calculations:</strong> To perform forestry calculations (volume, trees per acre, basal area, etc.) based on the data you enter and the settings you choose.</li>
+            <li><strong>Data Export:</strong> To generate a comprehensive CSV file containing your raw data, tallies, and calculated reports <span class="emphasis">when you initiate the "Save CSV" action</span>. This file is saved directly to your device.</li>
+            <li><strong>Offline Access:</strong> To enable the App to function reliably without an internet connection via the Service Worker cache.</li>
+            <li><strong>User Convenience:</strong> To persist your settings, custom species, and saved projects between sessions, and to offer session recovery.</li>
+            <li><strong>Compass Feature:</strong> To display a directional heading using device sensors when activated.</li>
+        </ul>
+        <p><span class="emphasis">We do not use your data for advertising, tracking across other sites, or any purpose other than the direct functionality of the TimberTally application as described.</span></p>
+    </div>
+
+    <div class="section">
+        <h2>5. How Information is Stored and Secured</h2>
+        <ul>
+            <li><strong>Local Storage:</strong> All your inventory data, settings, custom species, saved projects, and temporary session data are stored <span class="emphasis">directly on your device</span> within your web browser's secure local storage area or cache.</li>
+            <li><strong>No Cloud Storage (by Default):</strong> TimberTally does not automatically upload or back up your data to any external server or cloud service. Your data remains private on your device unless you manually export it.</li>
+            <li><strong>Security:</strong> While local browser storage offers some protection, the security of the data ultimately depends on the security of your device and browser environment. We do not implement additional encryption on the locally stored data beyond what the browser provides.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>6. Information Sharing and Disclosure</h2>
+        <p><span class="emphasis">TimberTally does not share your collected data with any third parties automatically.</span></p>
+        <ul>
+            <li><strong>User-Initiated Export:</strong> The only way data leaves the App's local storage is when <span class="emphasis">you</span> explicitly use the "Save CSV" feature. This creates a file on your device, which you can then choose to store, share, or transfer at your own discretion.</li>
+            <li><strong>No Sale of Data:</strong> We do not sell, rent, or trade your data.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>7. User Rights and Data Management</h2>
+        <ul>
+            <li><strong>Access and Review:</strong> You can review your collected data within the App's "Recent Entries" list and the "View Tally" screen.</li>
+            <li><strong>Deletion:</strong> You have full control over deleting your data stored locally by the App:
+                <ul>
+                    <li>Delete individual entries using the checkboxes and "Delete Selected" button.</li>
+                    <li>Delete all inventory data using the "Delete All Data" button (with confirmation).</li>
+                    <li>Manage (add/remove) custom species via the Species Management section.</li>
+                    <li>Manage (save/load/delete) saved projects via the Project Management section.</li>
+                    <li>Clearing your browser's cache and site data for TimberTally will remove all locally stored information, including settings, species, projects, and any unexported inventory data.</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+     <div class="section">
+        <h2>8. Data Retention</h2>
+        <p>Data entered into the App remains stored locally on your device indefinitely until:</p>
+        <ul>
+            <li>You manually delete it using the App's deletion features.</li>
+            <li>You clear your browser's site data for TimberTally.</li>
+        </ul>
+        <p>Temporary session recovery data is typically removed once you choose whether or not to recover it, or when new data overwrites it.</p>
+    </div>
+
+    <div class="section">
+        <h2>9. Children's Privacy</h2>
+        <p>TimberTally is not intended for use by individuals under the age of 18. We do not knowingly collect any personal information from children. If you believe a child has provided us with information without parental consent, please contact us.</p>
+    </div>
+
+    <div class="section">
+        <h2>10. Changes to This Privacy Policy</h2>
+        <p>We may update this Privacy Policy from time to time. We will notify you of any significant changes by updating the "Last Updated" date at the top of this policy and potentially through an in-app notification if feasible. We encourage you to review this policy periodically.</p>
+    </div>
+
+    <div class="section">
+        <h2>11. Contact Us</h2>
+        <p>If you have any questions about this Privacy Policy, please contact us at:</p>
+        <p><a href="mailto:james.a.baunach@gmail.com" class="contact-email">james.a.baunach@gmail.com</a></p>
+    </div>
+
+</body>
+</html>
