@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
    const DEFAULT_SPECIES = [
        "White Oak", "Red Oak", "Yellow-poplar", "Hickory", "Red Maple", "Sugar Maple",
        "Black Walnut", "Beech", "Eastern redcedar", "Elm", "Ash", "Chestnut Oak",
-       "Black Cherry", "Hackberry", "Balck gum", "MISC"
+       "Black Cherry", "Hackberry", "Balck Gum", "MISC"
    ].sort();
 
    // --- Current Species List ---
