@@ -1,3 +1,5 @@
+--- START OF FILE privacy.html ---
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,9 +7,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy - TimberTally</title>
     <style>
-        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; color: #333; }
-        h1, h2 { color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        h1 { text-align: center; }
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            color: #333;
+            position: relative; /* Needed for absolute positioning context if button were absolute */
+        }
+        h1, h2 {
+            color: #0056b3;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        h1 { text-align: center; margin-top: 40px; /* Added margin to avoid overlap with button */ }
         ul { margin-left: 20px; }
         li { margin-bottom: 10px; }
         strong { font-weight: bold; }
@@ -15,22 +29,49 @@
         .last-updated { text-align: center; color: #555; font-style: italic; margin-bottom: 20px; }
         .section { margin-bottom: 25px; }
         .emphasis { background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; }
+
+        /* --- Style for the Close Button --- */
+        #closePrivacyBtn {
+            position: fixed; /* Position relative to the viewport */
+            top: 10px;
+            right: 15px;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #888;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0 5px;
+            line-height: 1;
+            z-index: 10; /* Ensure it's above other content */
+            text-decoration: none; /* Remove underline if it behaves like a link */
+        }
+        #closePrivacyBtn:hover {
+            color: #333;
+        }
+        /* --- End Close Button Style --- */
+
     </style>
 </head>
 <body>
 
+    <!-- === Close Button Added Here === -->
+    <button id="closePrivacyBtn" title="Close Policy Window">×</button>
+    <!-- === End Close Button === -->
+
+
     <h1>Privacy Policy for TimberTally</h1>
-    <p class="last-updated">Last Updated: 2024-07-27</p> <!-- CHANGE THIS DATE! -->
+    <p class="last-updated">Last Updated: 2025-04-25</p> <!-- Remember to update this date -->
 
     <div class="section">
         <h2>1. Introduction</h2>
         <p>This Privacy Policy describes how TimberTally ("the App," "we," "us," or "our") collects, uses, and handles your information when you use our Progressive Web App (PWA). TimberTally is designed for offline-first timber inventory data collection.</p>
-        <p>Your privacy is important to us. This App primarily stores data <span class="emphasis">locally on your own device</span> and does not automatically transmit personal data to us or any third party.</p>
+        <p>Your privacy is important to us. This App stores data <span class="emphasis">locally on your own device</span> and does not automatically transmit personal data to us or any third party.</p>
     </div>
 
     <div class="section">
         <h2>2. Information We Collect</h2>
-        <p>TimberTally collects the following types of information, primarily stored locally on your device using your browser's storage mechanisms (like `localStorage`):</p>
+        <p>TimberTally collects the following types of information, stored locally on your device using your browser's storage mechanisms (like `localStorage`):</p>
         <ul>
             <li><strong>Timber Inventory Data (Entered by You):</strong> Plot Number, Tree Species, Diameter at Breast Height (DBH), Log Count, Cut Status, and optional textual Notes associated with each tree entry.</li>
             <li><strong>GPS Location Data (Optional):</strong> If you choose to use the "Get Location" feature, the App requests access to your device's GPS to record the Latitude and Longitude coordinates at the time of entry. This collection is <span class="emphasis">explicitly initiated by you</span> and requires your permission via browser prompts. Location data is stored locally alongside the corresponding tree entry.</li>
@@ -125,5 +166,23 @@
         <p><a href="mailto:james.a.baunach@gmail.com" class="contact-email">james.a.baunach@gmail.com</a></p>
     </div>
 
+    <!-- === JavaScript for the Close Button === -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const closeButton = document.getElementById('closePrivacyBtn');
+            if (closeButton) {
+                closeButton.addEventListener('click', () => {
+                    // Attempt to close the window/tab
+                    // Note: This might be blocked by the browser unless the window
+                    // was opened via script (like window.open).
+                    console.log("Attempting to close privacy policy window...");
+                    window.close();
+                });
+            }
+        });
+    </script>
+    <!-- === End JavaScript === -->
+
 </body>
 </html>
+--- END OF FILE privacy.html ---
