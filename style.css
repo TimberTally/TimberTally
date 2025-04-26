@@ -715,8 +715,8 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     h1 { font-size: 1.4em; margin-bottom: 10px; }
 
     /* Adjust header layout & button size */
-    .plot-settings-header { padding-bottom: 5px; margin-bottom: 10px; } /* Removed flex-wrap here */
-    .plot-number-section { gap: 5px 10px; /* Row and column gap */ } /* Added flex-wrap here */
+    .plot-settings-header { padding-bottom: 5px; margin-bottom: 10px; }
+    .plot-number-section { gap: 5px 10px; /* Row and column gap */ flex-wrap: wrap; /* Allow wrapping within */ }
     .settings-toggle-btn { font-size: 0.85em; padding: 5px 8px; }
     .plot-counter-btn { width: 28px; height: 28px; font-size: 1.1em; }
     #plotNumberDisplay { font-size: 1em; padding: 4px 6px; }
