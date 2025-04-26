@@ -19,7 +19,7 @@
 
         <!-- Input Section -->
          <div class="input-section">
-            <!-- Plot Number Counter & Settings Button Section -->
+            <!-- Plot Number Counter, Needed Plots & Settings Button Section -->
             <div class="plot-settings-header">
                 <div class="plot-number-section">
                     <label for="plotNumberDisplay" class="plot-number-label">Plot #:</label>
@@ -28,6 +28,11 @@
                         <span id="plotNumberDisplay" title="Current Plot Number">1</span>
                         <button type="button" id="plotIncrementBtn" class="plot-counter-btn" title="Increment Plot Number">+</button>
                     </div>
+                    <!-- *** Needed Plots Display *** -->
+                    <div id="plotGoalDisplay" class="plot-goal-display" title="Estimated plots needed for +/- 10% error at 95% confidence (t=2)">
+                        Needed: <span id="neededPlotsValue">---</span>
+                    </div>
+                    <!-- *** END: Needed Plots Display *** -->
                 </div>
                  <!-- Settings Toggle Button -->
                 <button id="toggleSettingsBtn" class="settings-toggle-btn" title="Show Forestry Settings" aria-expanded="false" aria-controls="settingsSection">
@@ -39,14 +44,19 @@
             <div id="settingsSection" class="collapsible-section" hidden>
                 <h2>Forestry Settings</h2>
 
-                <!-- *** START: Manual Update Check Button *** -->
+                <!-- Manual Update Check Button -->
                 <div class="update-check-container">
                     <button type="button" id="manualUpdateCheckBtn" class="control-button">Check for Updates</button>
                     <span id="updateCheckStatus" class="update-check-status"></span>
                 </div>
-                <!-- *** END: Manual Update Check Button *** -->
 
+                <!-- Total Acreage Input -->
+                <div class="input-group">
+                    <label for="totalAcreageInput">Total Woodland Acreage:</label>
+                    <input type="number" id="totalAcreageInput" min="0" step="0.1" placeholder="e.g., 40.5">
+                </div>
 
+                <!-- Standard Settings -->
                 <div class="input-group">
                     <label for="bafSelect">Basal Area Factor (BAF):</label>
                     <select id="bafSelect">
@@ -82,6 +92,7 @@
                     <button type="button" id="showTreeKeyBtn" class="control-button" style="background-color: #28a745;">Show Tree ID Key</button>
                 </div>
 
+                <!-- Button to show Privacy Policy -->
                 <div class="input-group key-button-container" style="margin-top: 10px; text-align: center;">
                     <button type="button" id="showPrivacyPolicyBtn" class="control-button" style="background-color: #6c757d;">View Privacy Policy</button>
                 </div>
