@@ -10,6 +10,8 @@
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> -->
     <link rel="apple-touch-icon" href="icon.png"> <!-- iOS home screen icon -->
     <meta name="theme-color" content="#007bff"> <!-- Theme color for browser UI -->
+    <!-- Add Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -28,8 +30,8 @@
                         <span id="plotNumberDisplay" title="Current Plot Number">1</span>
                         <button type="button" id="plotIncrementBtn" class="plot-counter-btn" title="Increment Plot Number">+</button>
                     </div>
-                    <!-- *** Needed Plots Display *** -->
-                    <div id="plotGoalDisplay" class="plot-goal-display" title="Estimated plots needed for +/- 10% error at 95% confidence (t=2)">
+                    <!-- *** Needed Plots Display (Updated Title) *** -->
+                    <div id="plotGoalDisplay" class="plot-goal-display" title="Precision (based on CV for +/- 10% & 20% error, t=2) | Intensity (based on total acreage & target acres/plot)">
                         Needed: <span id="neededPlotsValue">---</span>
                     </div>
                     <!-- *** END: Needed Plots Display *** -->
@@ -48,12 +50,6 @@
                 <div class="update-check-container">
                     <button type="button" id="manualUpdateCheckBtn" class="control-button">Check for Updates</button>
                     <span id="updateCheckStatus" class="update-check-status"></span>
-                </div>
-
-                <!-- Total Acreage Input -->
-                <div class="input-group">
-                    <label for="totalAcreageInput">Total Woodland Acreage:</label>
-                    <input type="number" id="totalAcreageInput" min="0" step="0.1" placeholder="e.g., 40.5">
                 </div>
 
                 <!-- Standard Settings -->
@@ -84,6 +80,15 @@
                         <option value="78" selected>78</option>
                         <option value="80">80</option>
                         <option value="82">82</option>
+                    </select>
+                </div>
+
+                 <!-- Generate Graphs Setting -->
+                <div class="input-group">
+                    <label for="generateGraphsSelect">Generate Graph JPGs on Save:</label>
+                    <select id="generateGraphsSelect">
+                        <option value="No" selected>No</option>
+                        <option value="Yes">Yes</option>
                     </select>
                 </div>
 
@@ -143,7 +148,7 @@
         <!-- Button Section -->
         <div class="button-section">
             <button id="submitBtn">Submit Entry</button>
-            <button id="saveCsvBtn" disabled>Save CSV</button>
+            <button id="saveCsvBtn" disabled>Save CSV & Graphs</button> <!-- Updated Text -->
             <button id="viewTallyBtn" disabled>View Tally</button>
         </div>
 
@@ -385,6 +390,15 @@
         </div>
     </div>
     <!-- === END: Tree Key Modal === -->
+
+    <!-- === START: Hidden Canvas Elements for Charts === -->
+    <div style="position: absolute; left: -9999px; top: -9999px;">
+        <canvas id="baChartCanvas" width="800" height="450"></canvas>
+        <canvas id="tpaChartCanvas" width="800" height="450"></canvas>
+        <canvas id="volSpeciesChartCanvas" width="800" height="550"></canvas> <!-- Taller for horizontal bars -->
+        <canvas id="volSawtimberChartCanvas" width="800" height="450"></canvas>
+    </div>
+    <!-- === END: Hidden Canvas Elements for Charts === -->
 
 
     <script src="script.js" defer></script>
