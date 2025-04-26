@@ -58,7 +58,7 @@ label.inline-label {
     font-weight: normal;
 }
 
-select, textarea, input[type="text"] {
+select, textarea, input[type="text"], input[type="number"] { /* Added input[type="number"] */
     width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
@@ -83,14 +83,15 @@ textarea {
     padding-bottom: 10px;
     border-bottom: 1px solid #eee;
     gap: 10px; /* Gap between plot counter and settings button */
+    flex-wrap: wrap; /* Allow wrapping */
 }
 
 .plot-number-section {
     display: flex;
     align-items: center;
-    /* Removed specific margins/borders, handled by parent */
-    gap: 10px;
-    flex-grow: 1; /* Allow plot number to take available space */
+    gap: 10px; /* Gap between elements within the section */
+    flex-grow: 1; /* Allow plot number group to take available space */
+    flex-wrap: wrap; /* Allow plot goal to wrap */
 }
 .plot-number-label {
     font-weight: bold;
@@ -103,6 +104,7 @@ textarea {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0; /* Prevent counter group from shrinking */
 }
 .plot-counter-btn {
     background-color: #6c757d;
@@ -131,6 +133,24 @@ textarea {
     background-color: #f8f9fa;
     margin: 0; /* Remove default margins */
 }
+
+/* Styling for Needed Plots Display */
+.plot-goal-display {
+    font-size: 0.85em;
+    color: #555;
+    margin-left: 10px; /* Space from the plot counter */
+    padding: 4px 8px;
+    background-color: #e9ecef; /* Light background */
+    border-radius: 4px;
+    white-space: nowrap; /* Prevent wrapping */
+    border: 1px solid #dee2e6;
+    flex-shrink: 0; /* Don't shrink */
+}
+#neededPlotsValue {
+    font-weight: bold;
+    color: #0056b3; /* Make the number stand out */
+}
+
 
 /* Settings Toggle Button Style */
 .settings-toggle-btn {
@@ -171,6 +191,10 @@ textarea {
     border-bottom: 1px solid #eee;
     padding-bottom: 8px;
 }
+
+/* Styling for Total Acreage Input (already covered by general input[type=number]) */
+/* #settingsSection #totalAcreageInput {} */
+
 
 /* Condensed Input Row Styles (Cut/Location) */
 .input-row-condensed {
@@ -691,11 +715,13 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     h1 { font-size: 1.4em; margin-bottom: 10px; }
 
     /* Adjust header layout & button size */
-    .plot-settings-header { padding-bottom: 5px; margin-bottom: 10px; flex-wrap: wrap; }
+    .plot-settings-header { padding-bottom: 5px; margin-bottom: 10px; } /* Removed flex-wrap here */
+    .plot-number-section { gap: 5px 10px; /* Row and column gap */ } /* Added flex-wrap here */
     .settings-toggle-btn { font-size: 0.85em; padding: 5px 8px; }
-    .plot-number-section { gap: 5px; }
     .plot-counter-btn { width: 28px; height: 28px; font-size: 1.1em; }
     #plotNumberDisplay { font-size: 1em; padding: 4px 6px; }
+    .plot-goal-display { margin-left: 0; font-size: 0.8em; padding: 3px 6px;} /* Adjust needed plots display */
+
 
     #entryView .output-section { padding: 10px; padding-top: 45px; }
     .output-controls { top: 10px; left: 10px; right: 10px; height: auto; }
@@ -713,7 +739,7 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     #entriesTable tbody td, #entriesTable thead th { padding: 4px 5px; } /* Tighter padding */
 
     /* Adjust form elements */
-    select, textarea, input[type="text"], .input-with-button input[type="file"] { font-size: 0.95em; padding: 6px; }
+    select, textarea, input[type="text"], input[type="number"], .input-with-button input[type="file"] { font-size: 0.95em; padding: 6px; }
     button { padding: 7px 12px; font-size: 0.9em; }
     .input-with-button button { padding: 7px 10px; font-size: 0.95em; }
     #deleteProjectBtn { padding: 7px 8px; font-size: 0.85em; }
