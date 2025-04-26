@@ -236,9 +236,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const MIN_PLOT_NUMBER = 1;
     const MAX_PLOT_NUMBER = 99;
     const DEFAULT_SPECIES = [ /* ... unchanged ... */
-       "White Oak", "Red Oak", "Yellow-poplar", "Hickory", "Maple",
-       "Black Walnut", "Beech", "Eastern redcedar", "Elm", "Ash",
-       "Black Cherry", "Hackberry", "Gum", "MISC"
+       "White Oak", "Red Oak", "Yellow-poplar", "Hickory", "Red Maple",
+       "Black Walnut", "Beech", "Eastern redcedar", "Elm", "Ash", "Chestnut Oak",
+       "Black Cherry", "Hackberry", "Black Gum", "MISC", "Sugar Maple"
     ].sort();
 
     // --- State Variables ---
