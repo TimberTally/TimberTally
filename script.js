@@ -155,14 +155,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const entryCountSpan = document.getElementById('entryCount');
     const feedbackMsg = document.getElementById('feedbackMsg');
 
-    // --- Plot Counter Elements ---
+    // --- Plot Counter & Goal Elements ---
     const plotDecrementBtn = document.getElementById('plotDecrementBtn');
     const plotIncrementBtn = document.getElementById('plotIncrementBtn');
     const plotNumberDisplay = document.getElementById('plotNumberDisplay');
+    const neededPlotsValue = document.getElementById('neededPlotsValue');   // <-- Plot Goal Display
 
     // --- Settings Elements ---
     const settingsSection = document.getElementById('settingsSection');
     const toggleSettingsBtn = document.getElementById('toggleSettingsBtn');
+    const totalAcreageInput = document.getElementById('totalAcreageInput'); // <-- Total Acreage Input
     const bafSelect = document.getElementById('bafSelect');
     const logRuleSelect = document.getElementById('logRuleSelect');
     const formClassSelect = document.getElementById('formClassSelect');
@@ -171,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const manualUpdateCheckBtn = document.getElementById('manualUpdateCheckBtn');
     const updateCheckStatus = document.getElementById('updateCheckStatus');
     const showPrivacyPolicyBtn = document.getElementById('showPrivacyPolicyBtn');
-    const showTreeKeyBtn = document.getElementById('showTreeKeyBtn'); // Moved here for grouping
+    const showTreeKeyBtn = document.getElementById('showTreeKeyBtn');
 
 
    // --- Species Management Elements ---
@@ -210,17 +212,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const compassSource = document.getElementById('compassSource');
     const closeCompassBtn = document.getElementById('closeCompassBtn');
 
-    // --- Update Notification elements (declared outside if using SW logic directly) ---
-    // const updateNotification = document.getElementById('updateNotification'); // Already declared in SW section
-
     // --- Tree Key Modal Elements ---
-    // const showTreeKeyBtn = document.getElementById('showTreeKeyBtn'); // Moved to Settings Elements
     const treeKeyModal = document.getElementById('treeKeyModal');
     const closeTreeKeyBtn = document.getElementById('closeTreeKeyBtn');
     const closeTreeKeyBtnBottom = document.getElementById('closeTreeKeyBtnBottom');
 
-    // --- Data Storage ---
-    let collectedData = [];
+    // --- Data Storage Keys ---
     const STORAGE_KEY = 'timberTallyTempSession';
     const SPECIES_STORAGE_KEY = 'timberTallyCustomSpecies';
     const PROJECTS_STORAGE_KEY = 'timberTallyProjects';
@@ -229,22 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Constants ---
     const PRIVACY_POLICY_URL = 'https://timbertally.github.io/TimberTally/privacy.html';
     const BA_CONST = 0.005454; // Basal Area Constant (for DBH in inches, BA in sq ft)
-
-    // --- State Variables ---
-    let currentLocation = null;
-    let feedbackTimeout = null;
-    let settingsFeedbackTimeout = null;
-    let speciesFeedbackTimeout = null;
-    let projectFeedbackTimeout = null;
-    let updateStatusTimeout = null; // For clearing update status
-    let savedProjects = {}; // Object to hold projects { projectName: [data], ... }
-    let currentPlotNumber = 1; // Plot Counter State
-    let currentBaf = 10;       // Settings State
-    let currentLogRule = 'Doyle'; // Settings State
-    let currentFormClass = 78;    // Settings State
-    let currentSpeciesList = [];  // Current Species List State
-
-    // --- Constants (continued) ---
     const MIN_PLOT_NUMBER = 1;
     const MAX_PLOT_NUMBER = 99;
     const DEFAULT_SPECIES = [
@@ -252,6 +233,23 @@ document.addEventListener('DOMContentLoaded', () => {
        "Black Walnut", "Beech", "Eastern redcedar", "Elm", "Ash",
        "Black Cherry", "Hackberry", "Gum", "MISC"
     ].sort();
+
+
+    // --- State Variables ---
+    let collectedData = [];
+    let currentLocation = null;
+    let feedbackTimeout = null;
+    let settingsFeedbackTimeout = null;
+    let speciesFeedbackTimeout = null;
+    let projectFeedbackTimeout = null;
+    let updateStatusTimeout = null;
+    let savedProjects = {};
+    let currentPlotNumber = 1;
+    let currentBaf = 10;
+    let currentLogRule = 'Doyle';
+    let currentFormClass = 78;
+    let currentTotalAcreage = null; // <-- State for total acreage
+    let currentSpeciesList = [];
 
     // --- Volume Tables (FC78 BASE) ---
     const DOYLE_FC78_VOLUMES = { /* ... Doyle volumes object ... */
@@ -263,7 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const INTERNATIONAL_FC78_VOLUMES = { /* ... International volumes object ... */
         '10': { '1.0': 36, '1.5': 48, '2.0': 59, '2.5': 66, '3.0': 73 },'11': { '1.0': 46, '1.5': 61, '2.0': 76, '2.5': 86, '3.0': 96 },'12': { '1.0': 56, '1.5': 74, '2.0': 92, '2.5': 106, '3.0': 120, '3.5': 128, '4.0': 137 },'13': { '1.0': 67, '1.5': 90, '2.0': 112, '2.5': 130, '3.0': 147, '3.5': 158, '4.0': 168 },'14': { '1.0': 78, '1.5': 105, '2.0': 132, '2.5': 153, '3.0': 174, '3.5': 187, '4.0': 200 },'15': { '1.0': 92, '1.5': 124, '2.0': 156, '2.5': 182, '3.0': 208, '3.5': 225, '4.0': 242 },'16': { '1.0': 106, '1.5': 143, '2.0': 180, '2.5': 210, '3.0': 241, '3.5': 263, '4.0': 285 },'17': { '1.0': 121, '1.5': 164, '2.0': 206, '2.5': 242, '3.0': 278, '3.5': 304, '4.0': 330 },'18': { '1.0': 136, '1.5': 184, '2.0': 233, '2.5': 274, '3.0': 314, '3.5': 344, '4.0': 374 },'19': { '1.0': 154, '1.5': 209, '2.0': 264, '2.5': 311, '3.0': 358, '3.5': 392, '4.0': 427 },'20': { '1.0': 171, '1.5': 234, '2.0': 296, '2.5': 348, '3.0': 401, '3.5': 440, '4.0': 480, '4.5': 511, '5.0': 542 },'21': { '1.0': 191, '1.5': 262, '2.0': 332, '2.5': 391, '3.0': 450, '3.5': 496, '4.0': 542, '4.5': 579, '5.0': 616 },'22': { '1.0': 211, '1.5': 289, '2.0': 357, '2.5': 434, '3.0': 499, '3.5': 552, '4.0': 593, '4.5': 646, '5.0': 681 },'23': { '1.0': 231, '1.5': 317, '2.0': 404, '2.5': 467, '3.0': 552, '3.5': 608, '4.0': 663, '4.5': 714, '5.0': 766 },'24': { '1.0': 251, '1.5': 345, '2.0': 441, '2.5': 523, '3.0': 605, '3.5': 664, '4.0': 723, '4.5': 782, '5.0': 840 },'25': { '1.0': 275, '1.5': 380, '2.0': 484, '2.5': 574, '3.0': 665, '3.5': 732, '4.0': 800, '4.5': 865, '5.0': 930 },'26': { '1.0': 299, '1.5': 414, '2.0': 528, '2.5': 626, '3.0': 725, '3.5': 801, '4.0': 877, '4.5': 949, '5.0': 1021 },'27': { '1.0': 323, '1.5': 448, '2.0': 572, '2.5': 680, '3.0': 788, '3.5': 870, '4.0': 952, '4.5': 1032, '5.0': 1111 },'28': { '1.0': 347, '1.5': 482, '2.0': 616, '2.5': 733, '3.0': 850, '3.5': 938, '4.0': 1027, '4.5': 1114, '5.0': 1201, '5.5': 1280, '6.0': 1358 },'29': { '1.0': 375, '1.5': 521, '2.0': 667, '2.5': 794, '3.0': 920, '3.5': 1016, '4.0': 1112, '4.5': 1210, '5.0': 1308, '5.5': 1398, '6.0': 1488 },'30': { '1.0': 403, '1.5': 560, '2.0': 718, '2.5': 854, '3.0': 991, '3.5': 1094, '4.0': 1198, '4.5': 1306, '5.0': 1415, '5.5': 1517, '6.0': 1619 },'31': { '1.0': 432, '1.5': 602, '2.0': 772, '2.5': 921, '3.0': 1070, '3.5': 1184, '4.0': 1299, '4.5': 1412, '5.0': 1526, '5.5': 1640, '6.0': 1754 },'32': { '1.0': 462, '1.5': 644, '2.0': 826, '2.5': 988, '3.0': 1149, '3.5': 1274, '4.0': 1400, '4.5': 1518, '5.0': 1637, '5.5': 1762, '6.0': 1888 },'33': { '1.0': 492, '1.5': 686, '2.0': 880, '2.5': 1053, '3.0': 1226, '3.5': 1360, '4.0': 1495, '4.5': 1622, '5.0': 1750, '5.5': 1888, '6.0': 2026 },'34': { '1.0': 521, '1.5': 728, '2.0': 934, '2.5': 1119, '3.0': 1304, '3.5': 1447, '4.0': 1590, '4.5': 1727, '5.0': 1864, '5.5': 2014, '6.0': 2163 },'35': { '1.0': 555, '1.5': 776, '2.0': 998, '2.5': 1196, '3.0': 1394, '3.5': 1548, '4.0': 1702, '4.5': 1851, '5.0': 2000, '5.5': 2156, '6.0': 2312 },'36': { '1.0': 589, '1.5': 826, '2.0': 1063, '2.5': 1274, '3.0': 1485, '3.5': 1650, '4.0': 1814, '4.5': 1974, '5.0': 2135, '5.5': 2298, '6.0': 2461 },'37': { '1.0': 622, '1.5': 873, '2.0': 1124, '2.5': 1351, '3.0': 1578, '3.5': 1752, '4.0': 1926, '4.5': 2099, '5.0': 2272, '5.5': 2444, '6.0': 2616 },'38': { '1.0': 656, '1.5': 921, '2.0': 1186, '2.5': 1428, '3.0': 1670, '3.5': 1854, '4.0': 2038, '4.5': 2224, '5.0': 2410, '5.5': 2590, '6.0': 2771 },'39': { '1.0': 694, '1.5': 976, '2.0': 1258, '2.5': 1514, '3.0': 1769, '3.5': 1968, '4.0': 2166, '4.5': 2359, '5.0': 2552, '5.5': 2744, '6.0': 2937 },'40': { '1.0': 731, '1.5': 1030, '2.0': 1329, '2.5': 1598, '3.0': 1868, '3.5': 2081, '4.0': 2294, '4.5': 2494, '5.0': 2693, '5.5': 2898, '6.0': 3103 }
     };
-
 
     // --- Function Definitions ---
 
@@ -341,7 +338,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Settings Functions ---
     function saveSettings() {
         try {
-            const settings = { baf: currentBaf, logRule: currentLogRule, formClass: currentFormClass };
+            // Include total acreage in saved settings
+            const settings = {
+                baf: currentBaf,
+                logRule: currentLogRule,
+                formClass: currentFormClass,
+                totalAcreage: currentTotalAcreage // <-- ADDED
+            };
             localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
             console.log("[Settings] Saved:", settings);
         } catch (e) { console.error('[Settings] Error saving:', e); showSettingsFeedback("Error saving settings!", true); }
@@ -353,31 +356,46 @@ document.addEventListener('DOMContentLoaded', () => {
             if (storedSettingsJSON) {
                 const storedSettings = JSON.parse(storedSettingsJSON);
                 if (storedSettings && typeof storedSettings === 'object') {
+                    // Load standard settings
                     currentBaf = parseInt(storedSettings.baf, 10) || 10;
                     currentLogRule = ['Doyle', 'Scribner', 'International'].includes(storedSettings.logRule) ? storedSettings.logRule : 'Doyle';
                     currentFormClass = parseInt(storedSettings.formClass, 10) || 78;
                     if (![72, 74, 76, 78, 80, 82].includes(currentFormClass)) currentFormClass = 78;
 
-                    console.log("[Settings] Loaded:", { baf: currentBaf, logRule: currentLogRule, formClass: currentFormClass });
+                    // Load total acreage setting <-- ADDED
+                    currentTotalAcreage = storedSettings.totalAcreage !== undefined ? parseFloat(storedSettings.totalAcreage) : null;
+                    if (isNaN(currentTotalAcreage)) { currentTotalAcreage = null; }
+
+                    console.log("[Settings] Loaded:", { baf: currentBaf, logRule: currentLogRule, formClass: currentFormClass, totalAcreage: currentTotalAcreage });
+
+                    // Update UI elements
                     if (bafSelect) bafSelect.value = String(currentBaf);
                     if (logRuleSelect) logRuleSelect.value = currentLogRule;
                     if (formClassSelect) formClassSelect.value = String(currentFormClass);
+                    if (totalAcreageInput && currentTotalAcreage !== null) { // <-- ADDED
+                        totalAcreageInput.value = currentTotalAcreage;
+                    } else if (totalAcreageInput) {
+                         totalAcreageInput.value = ''; // Clear if null/undefined
+                    }
                     toggleFormClassSelector();
                 } else { applyDefaultSettings(); }
             } else { applyDefaultSettings(); }
         } catch (e) { console.error('[Settings] Error loading:', e); applyDefaultSettings(); }
         if(settingsSection) settingsSection.hidden = true;
         if(toggleSettingsBtn) toggleSettingsBtn.setAttribute('aria-expanded', 'false');
+        // Needed plots calculation will happen after data load in initializeApp
     }
 
     function applyDefaultSettings() {
         console.log("[Settings] Applying default settings.");
         currentBaf = 10; currentLogRule = 'Doyle'; currentFormClass = 78;
+        currentTotalAcreage = null; // <-- ADDED default for acreage
         if (bafSelect) bafSelect.value = '10';
         if (logRuleSelect) logRuleSelect.value = 'Doyle';
         if (formClassSelect) formClassSelect.value = '78';
+        if (totalAcreageInput) totalAcreageInput.value = ''; // <-- ADDED clear UI
         toggleFormClassSelector();
-        saveSettings();
+        saveSettings(); // Save the defaults
     }
 
     function toggleFormClassSelector() {
@@ -472,6 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         saveCsvBtn.disabled = !hasData; viewTallyBtn.disabled = !hasData; deleteAllBtn.disabled = !hasData; deleteBtn.disabled = !isAnyCheckboxChecked();
         updatePlotNumberFromData(); // Update plot# display based on potentially loaded data
+        calculateAndDisplayNeededPlots(); // <-- Recalculate needed plots when data changes
     }
     function isAnyCheckboxChecked() { return entriesTableBody && entriesTableBody.querySelector('input[type="checkbox"]:checked') !== null; }
 
@@ -816,22 +835,135 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    /**
+     * Calculates statistics based on per-plot volume/acre.
+     * @param {Array<Object>} data - The collectedData array.
+     * @param {number} baf - The Basal Area Factor used.
+     * @param {string} logRule - The Log Rule used.
+     * @param {number} formClass - The Form Class used (for Doyle).
+     * @returns {Object} An object containing { meanV, stdDevV, cvV, numValidPlots, plotVolumes } or null if insufficient data.
+     */
+    function calculatePlotStats(data, baf, logRule, formClass) {
+        if (!data || data.length === 0) return null;
+
+        const plots = {};
+        data.forEach(e => {
+            if (e?.plotNumber) {
+                const pNum = parseInt(e.plotNumber, 10);
+                if (!isNaN(pNum)) {
+                    if (!plots[pNum]) plots[pNum] = [];
+                    plots[pNum].push(e);
+                }
+            }
+        });
+
+        const plotNs = Object.keys(plots).map(Number).sort((a, b) => a - b);
+        if (plotNs.length === 0) return null; // No valid plots found
+
+        const plotVolumes = []; // Stores calculated volume/acre for each valid plot
+        plotNs.forEach(pN => {
+            let plotVPA = 0;
+            plots[pN].forEach(t => {
+                try {
+                    if (!t?.dbh || !t?.logs) return;
+                    const dbh = parseFloat(t.dbh);
+                    if (isNaN(dbh) || dbh <= 0) return;
+                    const baT = BA_CONST * Math.pow(dbh, 2);
+                    if (baT <= 0) return;
+                    const tpaT = baf / baT;
+                    const volT = getTreeVolume(t.dbh, t.logs, logRule, formClass);
+                    plotVPA += (volT * tpaT);
+                } catch (e) {
+                    console.error(`Volume calculation error in plot ${pN}:`, t, e);
+                }
+            });
+            plotVolumes.push(Math.round(plotVPA)); // Store rounded vol/acre for this plot
+        });
+
+        const n = plotVolumes.length;
+        if (n < 2) return { meanV: (n === 1 ? plotVolumes[0] : 0), stdDevV: 0, cvV: 0, numValidPlots: n, plotVolumes }; // Need at least 2 plots for StDev/CV
+
+        const sumV = plotVolumes.reduce((a, v) => a + v, 0);
+        const meanV = sumV / n;
+        const sqDiffs = plotVolumes.reduce((a, v) => a + Math.pow(v - meanV, 2), 0);
+        const varianceV = sqDiffs / (n - 1);
+        const stdDevV = Math.sqrt(varianceV);
+        const cvV = (meanV !== 0) ? (stdDevV / meanV) * 100 : 0;
+
+        return { meanV, stdDevV, cvV, numValidPlots: n, plotVolumes };
+    }
+
+    /**
+     * Calculates the estimated number of plots needed and updates the UI.
+     * Uses assumptions: E=10%, t=2.
+     */
+    function calculateAndDisplayNeededPlots() {
+        if (!neededPlotsValue) return; // Ensure the display element exists
+
+        const stats = calculatePlotStats(collectedData, currentBaf, currentLogRule, currentFormClass);
+
+        if (stats && stats.numValidPlots >= 2 && stats.cvV > 0) {
+            const E = 10; // Allowable error (%)
+            const t = 2;  // t-value (approximation for 95% confidence)
+            const cv = stats.cvV; // CV (%) from plot stats
+
+            const n_float = Math.pow((t * cv / E), 2);
+            const n_rounded = Math.ceil(n_float); // Round up
+
+            neededPlotsValue.textContent = n_rounded;
+            console.log(`Needed plots calculation: CV=${cv.toFixed(1)}%, n=${n_float.toFixed(2)}, rounded=${n_rounded}`);
+        } else if (stats && stats.numValidPlots < 2) {
+            neededPlotsValue.textContent = "N/A"; // Not enough plots yet
+            console.log("Needed plots: N/A (less than 2 plots)");
+        }
+         else {
+            neededPlotsValue.textContent = "---"; // No data or CV is zero
+            console.log("Needed plots: --- (no data or zero CV)");
+        }
+    }
+
     /** Generate and download the complete CSV file using current settings. */
     function generateAndDownloadCsv() {
         if (collectedData.length === 0) { showFeedback("No data to save.", true); return; }
         const selBaf=currentBaf, selRule=currentLogRule, selFc=currentFormClass;
         console.log(`Generating CSV: BAF=${selBaf}, Rule=${selRule}, FC=${selFc}`);
         try {
+            // --- Raw Data ---
             let rawCsv = "PlotNumber,DBH,Species,Logs,Cut,Notes,Latitude,Longitude\n";
             collectedData.forEach(e=>{if(!e)return; const n=`"${(e.notes||'').replace(/"/g,'""')}"`; const l=e.location||{}; rawCsv+=`${e.plotNumber??'?'},${e.dbh??'?'},"${e.species??'N/A'}",${e.logs??'?'},${e.cutStatus||'No'},${n},${l.lat||''},${l.lon||''}\n`;});
 
+            // --- Tally Data ---
             const tally = generateTallyData(); let tallyCsv = "\n\n--- TALLY DATA ---\nSpecies,DBH,Logs,Cut Status,Count\n";
             try { Object.keys(tally).sort().forEach(sp=>{Object.keys(tally[sp]).sort((a,b)=>Number(a)-Number(b)).forEach(dbh=>{Object.keys(tally[sp][dbh]).sort((a,b)=>{if(a==='Cull')return 1;if(b==='Cull')return -1;const nA=parseFloat(a),nB=parseFloat(b);return isNaN(nA)?1:isNaN(nB)?-1:nA-nB;}).forEach(logs=>{const c=tally[sp][dbh][logs]; const cut=c['Yes']||0, notCut=c['No']||0; if(cut>0)tallyCsv+=`"${sp}",${dbh},${logs},"Yes",${cut}\n`; if(notCut>0)tallyCsv+=`"${sp}",${dbh},${logs},"No",${notCut}\n`;});});});} catch (e) { console.error("Tally CSV Err:", e); tallyCsv+="Error in tally section.\n"; }
 
-            let plotCsv = ""; try { let plotVols=[]; let meanV=0, varianceV=0, stdDevV=0, cvV=0; const plots={}; collectedData.forEach(e=>{if(e?.plotNumber){const pNum=parseInt(e.plotNumber,10); if(!isNaN(pNum)){if(!plots[pNum])plots[pNum]=[]; plots[pNum].push(e);}}}); const plotNs=Object.keys(plots).map(Number).sort((a,b)=>a-b); if(plotNs.length>0){plotCsv=`\n\n--- PER-PLOT VOLUME & STATS (Rule:${selRule}${selRule==='Doyle'?' FC'+selFc:''}, BAF:${selBaf}) ---\nPlot,Volume (BF/Acre)\n`; plotNs.forEach(pN=>{let plotVPA=0; plots[pN].forEach(t=>{try{if(!t?.dbh||!t?.logs)return; const dbh=parseFloat(t.dbh); if(isNaN(dbh)||dbh<=0)return; const baT=BA_CONST*Math.pow(dbh,2); if(baT<=0)return; const tpaT=selBaf/baT, volT=getTreeVolume(t.dbh,t.logs,selRule,selFc); plotVPA+=(volT*tpaT);}catch(e){console.error(`Vol err p ${pN}:`,t,e);}}); const rndVPA=Math.round(plotVPA); plotVols.push(rndVPA); plotCsv+=`${pN},${rndVPA}\n`;}); const n=plotVols.length; if(n>0){const sumV=plotVols.reduce((a,v)=>a+v,0); meanV=sumV/n; if(n>1){const sqD=plotVols.reduce((a,v)=>a+Math.pow(v-meanV,2),0); varianceV=sqD/(n-1); stdDevV=Math.sqrt(varianceV); if(meanV!==0)cvV=(stdDevV/meanV)*100;}} plotCsv+=`\nNum Plots,${n}\nMean BF/Acre,${meanV.toFixed(1)}\nVariance,${n>1?varianceV.toFixed(1):'N/A'}\nStd Dev,${n>1?stdDevV.toFixed(1):'N/A'}\nCV (%),${(n>1&&meanV!==0)?cvV.toFixed(1):'N/A'}\n`;} else {plotCsv=`\n\n--- PER-PLOT STATS ---\nNo plot data.\n`;} } catch (e) { console.error("Plot Stats Err:",e); plotCsv="\n\n--- PER-PLOT STATS ---\nError generating plot stats.\n"; }
+            // --- Per-Plot Stats ---
+            let plotCsv = `\n\n--- PER-PLOT VOLUME & STATS (Rule:${selRule}${selRule==='Doyle'?' FC'+selFc:''}, BAF:${selBaf}) ---\n`;
+            const plotStats = calculatePlotStats(collectedData, selBaf, selRule, selFc);
 
+            if (plotStats && plotStats.numValidPlots > 0) {
+                plotCsv += `Plot,Volume (BF/Acre)\n`;
+                 const plots = {};
+                 collectedData.forEach(e => { if (e?.plotNumber) { const pNum = parseInt(e.plotNumber, 10); if (!isNaN(pNum)) plots[pNum] = true; }});
+                 const plotNs = Object.keys(plots).map(Number).sort((a, b) => a - b);
+                 plotNs.forEach((pN, index) => {
+                     if (plotStats.plotVolumes[index] !== undefined) {
+                         plotCsv += `${pN},${plotStats.plotVolumes[index]}\n`;
+                     }
+                 });
+
+                plotCsv += `\nNum Plots,${plotStats.numValidPlots}\n`;
+                plotCsv += `Mean BF/Acre,${plotStats.meanV.toFixed(1)}\n`;
+                plotCsv += `Variance,${plotStats.numValidPlots > 1 ? (plotStats.stdDevV * plotStats.stdDevV).toFixed(1) : 'N/A'}\n`; // Recalculate variance
+                plotCsv += `Std Dev,${plotStats.numValidPlots > 1 ? plotStats.stdDevV.toFixed(1) : 'N/A'}\n`;
+                plotCsv += `CV (%),${plotStats.numValidPlots > 1 ? plotStats.cvV.toFixed(1) : 'N/A'}\n`;
+            } else {
+                plotCsv += `No plot data or insufficient plots for statistics.\n`;
+            }
+
+            // --- Forestry Report ---
             let reportCsv = ""; try { const reportData = calculateForestryReport(collectedData, selBaf, selRule, selFc); reportCsv = formatReportForCsv(reportData); } catch (e) { console.error("Report CSV Err:", e); reportCsv = "\n\n--- FORESTRY REPORT DATA ---\nError generating report.\n"; }
 
+            // --- Combine and Download ---
             const combined = rawCsv + tallyCsv + plotCsv + reportCsv;
             const blob = new Blob([combined], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob);
             const link = document.createElement("a"); const ts = new Date().toISOString().slice(0, 19).replace(/[-T:]/g, "");
@@ -856,7 +988,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newEntry = { id: Date.now(), plotNumber: currentPlotNumber, dbh: dbhSelect.value, species: speciesSelect.value, logs: logsSelect.value, cutStatus: cutCheckbox.checked ? 'Yes' : 'No', notes: notesTextarea.value.trim(), location: currentLocation };
             if (!newEntry.species || !newEntry.dbh || !newEntry.logs) { showFeedback("Species, DBH, and Logs required.", true); return; }
             collectedData.push(newEntry);
-            renderEntries();
+            renderEntries(); // This will now trigger needed plots calculation
             saveSessionData();
             showFeedback("Entry Added!");
 
@@ -893,7 +1025,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (idsToDelete.size === 0) { showFeedback("Cannot identify selected entries.", true); return; } const num = idsToDelete.size; const word = num === 1 ? 'entry' : 'entries';
         if (!confirm(`Delete ${num} selected ${word}?`)) return;
         collectedData = collectedData.filter(entry => !(entry && entry.id && idsToDelete.has(entry.id)));
-        renderEntries(); saveSessionData(); showFeedback(`${num} ${word} deleted.`);
+        renderEntries(); // This will now trigger needed plots calculation
+        saveSessionData(); showFeedback(`${num} ${word} deleted.`);
     }
 
     function handleDeleteAll() {
@@ -901,7 +1034,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('WARNING: Delete ALL collected data? This cannot be undone.')) return;
         collectedData = [];
         try { localStorage.removeItem(STORAGE_KEY); } catch (e) { console.error('Clear Storage Err:', e); }
-        renderEntries(); showFeedback('All data deleted.');
+        renderEntries(); // This will now trigger needed plots calculation
+        showFeedback('All data deleted.');
         currentLocation = null; if(locationStatus)locationStatus.textContent = 'Location not set';
         if(projectNameInput)projectNameInput.value = ''; // Clear project name too
     }
@@ -946,9 +1080,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Settings
     if (toggleSettingsBtn) toggleSettingsBtn.addEventListener('click', () => { if(!settingsSection) return; const isHidden = settingsSection.hidden; settingsSection.hidden = !isHidden; toggleSettingsBtn.setAttribute('aria-expanded', String(isHidden)); toggleSettingsBtn.innerHTML = isHidden ? 'Hide Settings ▲' : 'Settings ⚙'; toggleSettingsBtn.title = isHidden ? 'Hide Settings' : 'Show Settings'; });
-    if (bafSelect) bafSelect.addEventListener('change', (e) => { currentBaf = parseInt(e.target.value, 10); saveSettings(); showSettingsFeedback(`BAF set to ${currentBaf}`, false); });
-    if (logRuleSelect) logRuleSelect.addEventListener('change', (e) => { currentLogRule = e.target.value; toggleFormClassSelector(); saveSettings(); showSettingsFeedback(`Rule: ${currentLogRule}`, false); checkAndSetLogsForDbh(); }); // Check Doyle rule on Rule change
-    if (formClassSelect) formClassSelect.addEventListener('change', (e) => { currentFormClass = parseInt(e.target.value, 10); saveSettings(); showSettingsFeedback(`Doyle FC: ${currentFormClass}`, false); });
+    if (bafSelect) bafSelect.addEventListener('change', (e) => { currentBaf = parseInt(e.target.value, 10); saveSettings(); showSettingsFeedback(`BAF set to ${currentBaf}`, false); calculateAndDisplayNeededPlots(); }); // Recalc needed plots on BAF change
+    if (logRuleSelect) logRuleSelect.addEventListener('change', (e) => { currentLogRule = e.target.value; toggleFormClassSelector(); saveSettings(); showSettingsFeedback(`Rule: ${currentLogRule}`, false); checkAndSetLogsForDbh(); calculateAndDisplayNeededPlots(); }); // Recalc needed plots on Rule change
+    if (formClassSelect) formClassSelect.addEventListener('change', (e) => { currentFormClass = parseInt(e.target.value, 10); saveSettings(); showSettingsFeedback(`Doyle FC: ${currentFormClass}`, false); calculateAndDisplayNeededPlots(); }); // Recalc needed plots on FC change
+    if (totalAcreageInput) { // Listener for Total Acreage Input
+        totalAcreageInput.addEventListener('change', (e) => {
+            const inputVal = e.target.value.trim();
+            if (inputVal === '') {
+                currentTotalAcreage = null;
+            } else {
+                const parsedAcreage = parseFloat(inputVal);
+                if (!isNaN(parsedAcreage) && parsedAcreage >= 0) {
+                    currentTotalAcreage = parsedAcreage;
+                } else {
+                    e.target.value = currentTotalAcreage !== null ? currentTotalAcreage : ''; // Revert
+                    showSettingsFeedback("Invalid acreage value.", true);
+                    return;
+                }
+            }
+            saveSettings();
+            showSettingsFeedback(`Total acreage set to ${currentTotalAcreage !== null ? currentTotalAcreage : 'N/A'}.`, false);
+            // Needed plots doesn't depend directly on acreage, but on CV which depends on plot data. No need to recalculate here.
+        });
+    }
     if (manualUpdateCheckBtn && updateCheckStatus && 'serviceWorker' in navigator) {
         manualUpdateCheckBtn.addEventListener('click', () => {
             if (updateStatusTimeout) clearTimeout(updateStatusTimeout);
@@ -1000,13 +1154,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const updateNotificationElement = document.getElementById('updateNotification'); // Get ref locally
             if (updateNotificationElement) updateNotificationElement.style.display = 'none';
 
-            loadSettings(); // Load settings FIRST
+            loadSettings(); // Load settings FIRST (includes total acreage)
             initializeSpeciesManagement(); // Sets up currentSpeciesList and populates dropdowns
             initializeProjectManagement(); // Loads saved projects and populates dropdown
             populateDbhOptions();          // Populates DBH dropdown
             populateLogsOptions();         // Populates Logs dropdown
             checkAndSetLogsForDbh();       // Initial check based on default/loaded settings
-            loadAndPromptSessionData();    // Load session data AFTER settings/species are ready (also renders)
+            loadAndPromptSessionData();    // Load session data AFTER settings/species are ready (also calls renderEntries which calls needed plot calc)
+
+            // Explicitly call calculation after initial load to be safe, although renderEntries should handle it
+            calculateAndDisplayNeededPlots();
 
             console.log("TimberTally application initialization complete.");
         } catch(initError) {
