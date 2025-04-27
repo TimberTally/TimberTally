@@ -8,6 +8,12 @@ This application allows users, such as foresters, researchers, or landowners, to
 
 *Contact for inquiries: james.a.baunach@gmail.com*
 
+## Understanding the App
+
+*   [How TimberTally Calculates Results](./calculations_explained.html)
+*   [Understanding the CSV Output File](./csv_explained.html)
+*   [Proof of Work](./proof_of_work.html)
+
 ## Features
 
 *   **Offline First:** Uses a Service Worker (`v6`) to cache application files, allowing it to load and function without network access after the first visit. Includes an update notification system.
