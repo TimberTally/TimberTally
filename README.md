@@ -10,9 +10,9 @@ This application allows users, such as foresters, researchers, or landowners, to
 
 ## Understanding the App
 
-*   [How TimberTally Calculates Results](./calculations_explained.html)
-*   [Understanding the CSV Output File](./csv_explained.html)
-*   [Proof of Work](./proof_of_work.html)
+*   [How TimberTally Calculates Results](https://timbertally.github.io/TimberTally/calculations_explained.html)
+*   [Understanding the CSV Output File](https://timbertally.github.io/TimberTally/csv_explained.html)
+*   [Proof of Work](https://timbertally.github.io/TimberTally/proof_of_work.html)
 
 ## Features
 
