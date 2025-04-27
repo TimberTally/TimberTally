@@ -1,4 +1,4 @@
-<!-- START OF MODIFIED index.html -->
+<!-- START OF CORRECTED index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,7 +72,10 @@
                     <select id="generateGraphsSelect"> <option value="No" selected>No</option> <option value="Yes">Yes</option> </select>
                 </div>
                 <div class="input-group key-button-container" style="margin-top: 15px; text-align: center;"> <button type="button" id="showTreeKeyBtn" class="control-button" style="background-color: #28a745;">Show Tree ID Key</button> </div>
-                <div class="input-group key-button-container" style="margin-top: 10px; text-align: center;"> <button type="button" id="showPrivacyPolicyBtn" class="control-button" style="background-color: #6c757d;">View Privacy Policy</button> </div>
+                <div class="input-group key-button-container" style="margin-top: 10px; text-align: center;">
+                    <button type="button" id="showPrivacyPolicyBtn" class="control-button" style="background-color: #6c757d;">View Privacy Policy</button>
+                    <button type="button" id="showReadmeBtn" class="control-button" style="background-color: #6c757d; margin-left: 5px;" title="Open the application README file">View README</button>
+                 </div>
                 <div id="settingsFeedback" class="feedback-message" style="margin-top: 10px;"></div>
             </div>
 
@@ -80,12 +83,37 @@
             <div class="input-group"> <label for="speciesSelect">Species:</label> <select id="speciesSelect"></select> </div>
             <div class="input-group"> <label for="dbhSelect">DBH:</label> <select id="dbhSelect"></select> </div>
             <div class="input-group"> <label for="logsSelect">Logs:</label> <select id="logsSelect"></select> </div>
+
+            <!-- Condensed Row for Cut Checkbox and Location -->
             <div class="input-row-condensed">
-                <div class="cut-checkbox-group"> <input type="checkbox" id="cutCheckbox" name="cutStatus"> <label for="cutCheckbox">Cut</label> </div>
-                <div class="location-group"> <button type="button" id="getLocationBtn" title="Get GPS Location">Get Location</button> <span id="locationStatus" title="GPS Status">Location not set</span> </div>
+                <div class="cut-checkbox-group">
+                    <input type="checkbox" id="cutCheckbox" name="cutStatus">
+                    <label for="cutCheckbox">Cut</label>
+                </div>
+                <div class="location-group">
+                    <button type="button" id="getLocationBtn" title="Get GPS Location">Get Location</button>
+                    <span id="locationStatus" title="GPS Status">Location not set</span>
+                </div>
             </div>
-            <div class="input-group"> <label for="notesTextarea">Notes:</label> <textarea id="notesTextarea" rows="2"></textarea> </div>
-        </div>
+
+            <!-- Notes Input Group with Integrated Plot Goal -->
+            <div class="input-group notes-input-group">
+                <!-- Wrapper for label and plot goal -->
+                <div class="label-plot-goal-container">
+                    <label for="notesTextarea">Notes:</label>
+                    <!-- Moved Plot Goal Display Wrapper Here -->
+                    <div id="plotGoalDisplayWrapper" class="plot-goal-wrapper">
+                         <div id="plotGoalDisplay" class="plot-goal-display" title="Precision for current Area (based on CV for +/- 10% & 20% error, t=2)">
+                             Plots Needed: <span id="neededPlotsValue">---</span>
+                         </div>
+                     </div>
+                </div>
+                <!-- Textarea remains below the label/plot goal container -->
+                <textarea id="notesTextarea" rows="2"></textarea>
+            </div>
+            <!-- End Notes Input Group -->
+
+        </div> <!-- End Input Section -->
 
         <!-- Button Section -->
         <div class="button-section">
@@ -102,11 +130,7 @@
              <!-- Container for top controls -->
             <div class="output-controls">
                  <button id="deleteBtn" class="delete-button control-button" disabled>Delete Selected</button>
-                 <div id="plotGoalDisplayWrapper" class="plot-goal-wrapper">
-                     <div id="plotGoalDisplay" class="plot-goal-display" title="Precision for current Area (based on CV for +/- 10% & 20% error, t=2)">
-                         Plots Needed: <span id="neededPlotsValue">---</span>
-                     </div>
-                 </div>
+                 <!-- plotGoalDisplayWrapper was REMOVED from here -->
                  <button id="showCompassBtn" class="compass-button control-button">Show Compass</button>
             </div>
             <h2>Recent Entries (<span id="entryCount">0</span>)</h2>
@@ -210,4 +234,4 @@
     <script src="script.js" defer></script>
 </body>
 </html>
-<!-- END OF MODIFIED index.html -->
+<!-- END OF CORRECTED index.html -->
