@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimberTally Application: Calculation Proof of Work</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            max-width: 900px; /* Slightly wider for potentially longer lines */
+            margin-left: auto;
+            margin-right: auto;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 1.5em;
+            color: #0056b3;
+        }
+        h2 {
+            color: #0056b3;
+            margin-top: 2em;
+            border-top: 1px solid #ddd;
+            padding-top: 1em;
+        }
+        h3 {
+            color: #17a2b8; /* Teal color for subheadings */
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 1em;
+        }
+        li {
+            margin-bottom: 0.6em;
+        }
+        code {
+            background-color: #e9ecef; /* Lighter gray */
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.95em;
+            color: #495057; /* Darker gray text */
+        }
+        strong {
+            color: #212529; /* Slightly darker than body text */
+        }
+        .formula {
+            font-style: italic;
+            color: #555;
+            margin-left: 1em;
+            display: block;
+            font-size: 0.95em;
+            margin-top: 0.3em;
+        }
+        .input-list li, .output-list li {
+            list-style-type: none; /* Remove bullets for input/output */
+            position: relative;
+            padding-left: 1.5em;
+        }
+        .input-list li::before, .output-list li::before {
+            content: '» '; /* Use a simple arrow */
+            position: absolute;
+            left: 0;
+            color: #6c757d; /* Gray arrow */
+            font-weight: bold;
+        }
+        .definition-term {
+            font-weight: bold;
+            color: #343a40;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>TimberTally Application: Calculation Proof of Work</h1>
+
+    <h2>1. Introduction</h2>
+    <p>This document outlines the methodologies and formulas used for the core calculations within the TimberTally Progressive Web App (<code>script.js</code>). Its purpose is to provide transparency and allow verification of the forestry and statistical computations performed by the application based on user-inputted tree data and settings.</p>
+
+    <h2>2. Core Constants and Definitions</h2>
+    <ul>
+        <li><span class="definition-term">BA_CONST:</span> <code>0.005454</code> (Basal Area Constant for calculations in square feet from DBH in inches).</li>
+        <li><span class="definition-term">DBH:</span> Diameter at Breast Height (inches).</li>
+        <li><span class="definition-term">BA (Basal Area):</span> Cross-sectional area of a tree stem at breast height (square feet). <span class="formula">Calculated as <code>BA = BA_CONST * DBH^2</code>.</span></li>
+        <li><span class="definition-term">Logs:</span> Merchantable height of a tree in 16-foot log segments (e.g., 1.5 logs = 24 feet). "Cull" indicates no merchantable volume.</li>
+        <li><span class="definition-term">BAF:</span> Basal Area Factor (user-selected setting, e.g., 10, 20). Used in variable radius plot cruising.</li>
+        <li><span class="definition-term">TPA (Trees Per Acre):</span> Expansion factor for a single tree counted in a variable radius plot. <span class="formula">Calculated as <code>TPA = BAF / BA</code> (where BA is the basal area of the individual tree).</span></li>
+        <li><span class="definition-term">VPA (Volume Per Acre):</span> The volume contribution of a single counted tree expanded to a per-acre basis. <span class="formula">Calculated as <code>VPA = Tree Volume * TPA</code>.</span></li>
+        <li><span class="definition-term">BF (Board Feet):</span> Unit of volume for sawtimber, based on selected Log Rule.</li>
+        <li><span class="definition-term">QMD (Quadratic Mean Diameter):</span> The diameter corresponding to the tree of average basal area. <span class="formula">Calculated as <code>QMD = sqrt((Total BA/Acre / Total TPA/Acre) / BA_CONST)</code>.</span></li>
+        <li><span class="definition-term">Form Class (FC):</span> Used specifically with the Doyle log rule to adjust volume based on tree taper. Girard Form Class is assumed (ratio of DIB at 17.3 ft to DOB at 4.5 ft). Base tables are FC78.</li>
+        <li><span class="definition-term">Log Rules:</span> Doyle, Scribner (Decimal C implicitly used by tables), International 1/4" Rule. Determine board foot volume based on DBH and Logs.</li>
+    </ul>
+
+    <h2>3. Per-Tree Calculations</h2>
+    <p>These calculations are performed individually for many trees within larger report functions.</p>
+
+    <h3>3.1. Tree Volume Calculation (<code>getTreeVolume</code> function)</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Calculates the board foot volume of a single tree based on its DBH, Logs, the selected Log Rule, and (if Doyle) the Form Class.</li>
+        <li><strong>Inputs:</strong>
+            <ul class="input-list">
+                <li><code>dbhStr</code>: DBH as a string.</li>
+                <li><code>logsStr</code>: Logs as a string (can be numeric or "Cull").</li>
+                <li><code>logRule</code>: Currently selected log rule ('Doyle', 'Scribner', 'International').</li>
+                <li><code>formClass</code>: Currently selected Form Class (e.g., 78). Only used if <code>logRule</code> is 'Doyle'.</li>
+            </ul>
+        </li>
+        <li><strong>Logic:</strong>
+            <ol>
+                <li>Parses <code>dbhStr</code> to an integer (<code>dbhInt</code>). Returns 0 if DBH < 10 or not a valid number.</li>
+                <li>If <code>logsStr</code> is "Cull", returns 0.</li>
+                <li>Parses <code>logsStr</code> to a float (<code>logsNum</code>). Returns 0 if Logs <= 0 or not a valid number.</li>
+                <li>Determines the <code>logsKey</code> for table lookup by rounding <code>logsNum</code> down to the nearest 0.5 increment (e.g., 1.7 -> '1.5', 0.8 -> '0.5', 2.0 -> '2.0'). Returns 0 if the key becomes 0 or less after rounding (unless original <code>logsNum</code> > 0, then minimum key is '0.5').</li>
+                <li>Selects the base volume table (<code>DOYLE_FC78_VOLUMES</code>, <code>SCRIBNER_FC78_VOLUMES</code>, <code>INTERNATIONAL_FC78_VOLUMES</code>) based on the <code>logRule</code>.</li>
+                <li>Looks up the base volume using the <code>dbhKey</code> (string version of <code>dbhInt</code>) and the calculated <code>logsKey</code> in the selected table.</li>
+                <li>If the DBH/Log combination is not found in the table, or the table value is missing/null/zero, returns 0.</li>
+                <li><strong>Doyle Form Class Adjustment:</strong> If <code>logRule</code> is 'Doyle' and the selected <code>formClass</code> is not 78, the base volume (which is FC78) is adjusted: <br><code>Adjusted Volume = round(Base Volume * (Selected FC / 78.0))</code>.<br> If FC is 78, the base volume is used directly.</li>
+                <li>For 'Scribner' and 'International', the looked-up base volume is used directly without Form Class adjustment.</li>
+                <li>Returns the calculated (and potentially adjusted) volume, ensuring it's >= 0.</li>
+            </ol>
+        </li>
+        <li><strong>Output:</strong>
+            <ul class="output-list">
+                <li>Board foot volume (integer) for the single tree.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>3.2. DBH Class Assignment (<code>getDbhClass</code> function)</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Assigns a descriptive size class based on a tree's DBH.</li>
+        <li><strong>Input:</strong>
+            <ul class="input-list">
+                <li><code>dbh</code>: DBH (numeric).</li>
+            </ul>
+        </li>
+        <li><strong>Logic:</strong> Uses simple range checks:
+            <ul>
+                <li>2.0 <= DBH <= 5.9: "Sapling"</li>
+                <li>6.0 <= DBH <= 11.9: "Poletimber"</li>
+                <li>12.0 <= DBH <= 17.9: "Small Sawtimber"</li>
+                <li>18.0 <= DBH <= 23.9: "Medium Sawtimber"</li>
+                <li>DBH >= 24.0: "Large Sawtimber"</li>
+                <li>Otherwise (including NaN, < 2): "Other" or "Invalid" (handled in <code>calculateForestryReport</code>).</li>
+            </ul>
+        </li>
+        <li><strong>Output:</strong>
+            <ul class="output-list">
+                <li>String representing the DBH class.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>4. Data Aggregation</h2>
+
+    <h3>4.1. Tally Data Generation (<code>generateTallyData</code> function)</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Counts trees grouped by Species, DBH, Logs, and Cut Status across all Areas provided in the input data subset.</li>
+        <li><strong>Input:</strong>
+            <ul class="input-list">
+                <li><code>dataSubset</code>: Array of tree entry objects (e.g., all data, or data for a specific Area).</li>
+            </ul>
+        </li>
+        <li><strong>Logic:</strong>
+            <ol>
+                <li>Initializes an empty nested object <code>tally</code>.</li>
+                <li>Iterates through each entry in <code>dataSubset</code>.</li>
+                <li>Skips entries missing essential fields (Species, DBH, Logs, Cut Status).</li>
+                <li>Uses Species, DBH, Logs, and Cut Status as keys to navigate/create nested objects within <code>tally</code>.</li>
+                <li>Increments a counter at the final level: <code>tally[Species][DBH][Logs][Cut Status]++</code>.</li>
+            </ol>
+        </li>
+        <li><strong>Output:</strong>
+            <ul class="output-list">
+                <li>A nested object containing the tree counts for each unique combination found in the input data.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>5. Forestry Report Calculations (<code>calculateForestryReport</code> function)</h2>
+    <ul>
+        <li><strong>Purpose:</strong> Calculates comprehensive stand summary statistics based on a specific subset of data (typically one Area) and current settings.</li>
+        <li><strong>Inputs:</strong>
+            <ul class="input-list">
+                <li><code>dataSubset</code>: Array of tree entry objects for the specific Area being processed.</li>
+                <li><code>baf</code>: Current BAF setting.</li>
+                <li><code>logRule</code>: Current Log Rule setting.</li>
+                <li><code>formClass</code>: Current Form Class setting.</li>
+            </ul>
+        </li>
+        <li><strong>Logic:</strong>
+            <ol>
+                <li><strong>Initialization:</strong> Creates empty report objects (<code>report.summary</code>, <code>report.standDistribution</code>, etc.) and aggregation variables (e.g., <code>totTpaSum</code>, <code>cutVolSum</code>, <code>specData</code>, <code>clsData</code>).</li>
+                <li><strong>Plot Count:</strong> Determines the number of unique, valid plot numbers (<code>numPlots</code>) present in the <code>dataSubset</code>. Returns an error report if <code>numPlots</code> is 0.</li>
+                <li><strong>Per-Tree Loop (<code>dataSubset.forEach</code>):</strong> Iterates through each entry in the input data subset.
+                    <ul>
+                        <li>Skips invalid entries (missing DBH, Species, etc.). Invalid entries increment counts in the <code>clsData['Invalid']</code> structure.</li>
+                        <li>Parses <code>dbh</code>.</li>
+                        <li>Calculates the individual tree's Basal Area (<code>baT = BA_CONST * dbh^2</code>).</li>
+                        <li>Calculates the individual tree's TPA (<code>tpaT = baf / baT</code>). Handles <code>baT <= 0</code> case.</li>
+                        <li>Calculates the individual tree's Volume (<code>volT</code>) using <code>getTreeVolume()</code>.</li>
+                        <li>Calculates the individual tree's VPA (<code>vpaT = volT * tpaT</code>).</li>
+                        <li><strong>Accumulate Totals:</strong> Adds <code>tpaT</code> and <code>vpaT</code> to overall sums (<code>totTpaSum</code>, <code>totVolSum</code>). If the tree is marked 'Cut', adds <code>tpaT</code> and <code>vpaT</code> to cut sums (<code>cutTpaSum</code>, <code>cutVolSum</code>), and increments total/cut tree counts (<code>totTrees</code>, <code>cutTrees</code>).</li>
+                        <li><strong>Accumulate Species Data (<code>specData</code>):</strong> Aggregates <code>tpaT</code> and <code>vpaT</code> per species. Also tracks stem counts (<code>s</code>), cut counts (<code>c</code>), and accumulates VPA into size-class specific buckets (<code>vS</code>, <code>vM</code>, <code>vL</code>) and TPA into size-class buckets (<code>tpaSap</code>, <code>tpaPole</code>, <code>tpaSaw</code>) for later summaries.</li>
+                        <li><strong>Accumulate DBH Class Data (<code>clsData</code>):</strong> Assigns <code>getDbhClass(dbh)</code>. Aggregates <code>tpaT</code> and <code>vpaT</code> per DBH class. Also tracks stem counts (<code>s</code>), cut counts (<code>c</code>), and the sum of TPA for cut trees within that class (<code>ct</code>).</li>
+                    </ul>
+                </li>
+                <li><strong>Calculate Per-Acre Averages:</strong> Divides the total sums (<code>totTpaSum</code>, <code>cutTpaSum</code>, <code>totVolSum</code>, <code>cutVolSum</code>) by <code>numPlots</code> to get per-acre values (e.g., <code>treesPerAcre = totTpaSum / numPlots</code>). Calculates total BA/Acre (<code>baPerAcre = (totTrees * baf) / numPlots</code>) and cut/leave BA/Acre similarly using <code>cutTrees</code>. Calculates Leave values by subtracting Cut from Total (e.g., <code>treesPerAcreLeave = treesPerAcre - treesPerAcreCut</code>).</li>
+                <li><strong>Calculate QMD:</strong> Uses the formula <code>qmd = Math.sqrt((baPerAcre / treesPerAcre) / BA_CONST)</code>, handling division by zero if TPA is 0.</li>
+                <li><strong>Populate <code>report.summary</code>:</strong> Assigns the calculated overall averages (Total TPA, Cut TPA, Leave TPA, Total BA, Cut BA, Leave BA, QMD, Total Vol, Cut Vol, Leave Vol) and settings used (BAF, Rule, FC) to the summary object.</li>
+                <li><strong>Populate <code>report.standDistribution</code>:</strong>
+                    <ul>
+                        <li>Iterates through defined DBH classes (<code>clsOrder</code>).</li>
+                        <li>For each class, calculates: BA/Acre (Total, Cut, Leave), TPA/Acre (Total, Cut, Leave), Volume/Acre, % Total Stems, % Total BA, % Total Volume.</li>
+                        <li>Assigns these values to the <code>report.standDistribution[ClassName]</code> object.</li>
+                        <li>Calculates and adds a 'TOTALS' row by summing the per-class values.</li>
+                    </ul>
+                </li>
+                <li><strong>Populate <code>report.speciesSummary1</code> (Stem Distribution):</strong>
+                     <ul>
+                        <li>Iterates through species found in <code>specData</code>.</li>
+                        <li>Calculates TPA/Acre for the species in Sapling (<code>spTpaSapPA</code>), Poletimber (<code>spTpaPolePA</code>), and Sawtimber (<code>spTpaSawPA</code>) size classes.</li>
+                        <li>Calculates the percentage contribution of each size class for that species to the total stand TPA/Acre.</li>
+                        <li>Calculates the species' % Total Stems.</li>
+                        <li>Assigns these percentages to the <code>report.speciesSummary1[SpeciesName]</code> object.</li>
+                        <li>Calculates and adds a 'TOTALS' row.</li>
+                    </ul>
+               </li>
+                <li><strong>Populate <code>report.speciesSummary2</code> (Volume Distribution):</strong>
+                     <ul>
+                        <li>Iterates through species found in <code>specData</code>.</li>
+                        <li>Calculates Volume/Acre for the species in Small (<code>spVolS</code>), Medium (<code>spVolM</code>), and Large (<code>spVolL</code>) sawtimber classes.</li>
+                        <li>Calculates Total Volume/Acre for the species (<code>spVolA</code>).</li>
+                        <li>Calculates the species' % Total Volume.</li>
+                        <li>Assigns these volumes and percentage to the <code>report.speciesSummary2[SpeciesName]</code> object.</li>
+                        <li>Calculates and adds a 'TOTALS' row.</li>
+                    </ul>
+                </li>
+            </ol>
+        </li>
+        <li><strong>Output:</strong>
+            <ul class="output-list">
+                <li>A comprehensive report object containing <code>summary</code>, <code>standDistribution</code>, <code>speciesSummary1</code>, and <code>speciesSummary2</code> sub-objects with all calculated metrics for the input data subset.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>6. Plot Statistics (<code>calculatePlotStats</code> function)</h2>
+    <ul>
+        <li><strong>Purpose:</strong> Calculates basic statistics on the Volume Per Acre (VPA) derived from each individual plot *within a specific data subset (Area)*.</li>
+        <li><strong>Inputs:</strong>
+            <ul class="input-list">
+                <li><code>dataSubset</code>: Array of tree entry objects for the specific Area.</li>
+                <li><code>baf</code>, <code>logRule</code>, <code>formClass</code>: Current settings.</li>
+            </ul>
+        </li>
+        <li><strong>Logic:</strong>
+            <ol>
+                <li>Groups entries in <code>dataSubset</code> by <code>plotNumber</code>.</li>
+                <li>For each unique plot number within the subset:
+                    <ul>
+                        <li>Initializes plot VPA (<code>plotVPA</code>) to 0.</li>
+                        <li>Iterates through trees belonging to that plot.</li>
+                        <li>Calculates each tree's BA, TPA, and Volume (<code>getTreeVolume</code>).</li>
+                        <li>Calculates the tree's VPA contribution (<code>volT * tpaT</code>).</li>
+                        <li>Adds the tree's VPA to <code>plotVPA</code>.</li>
+                    </ul>
+                    Stores the final <code>plotVPA</code> (rounded) for the plot.</li>
+                <li>Uses the array of calculated <code>plotVolumes</code> (one value per plot in the subset).</li>
+                <li>Calculates:
+                    <ul>
+                        <li><code>n</code>: Number of valid plots with data in the subset.</li>
+                        <li>Mean VPA (<code>meanV</code>): Sum of <code>plotVolumes</code> / <code>n</code>.</li>
+                        <li>Variance (<code>varianceV</code>): Sum of squared differences from the mean / (<code>n</code> - 1). Handles <code>n</code> < 2.</li>
+                        <li>Standard Deviation (<code>stdDevV</code>): Square root of <code>varianceV</code>.</li>
+                        <li>Coefficient of Variation (<code>cvV</code>): (<code>stdDevV</code> / <code>meanV</code>) * 100. Handles <code>meanV == 0</code>.</li>
+                    </ul>
+                </li>
+            </ol>
+        </li>
+        <li><strong>Output:</strong>
+             <ul class="output-list">
+                <li>An object containing <code>meanV</code>, <code>stdDevV</code>, <code>cvV</code>, <code>numValidPlots</code>, and the raw <code>plotVolumes</code> array for the input subset. Returns null if no valid plots are found in the subset.</li>
+            </ul>
+       </li>
+    </ul>
+
+    <h2>7. Needed Plots Calculation (<code>calculateAndDisplayNeededPlots</code> function)</h2>
+    <ul>
+        <li><strong>Purpose:</strong> Estimates the number of plots required *for the currently selected Area* to achieve specified sampling precision levels (±10% and ±20% error) based on the Coefficient of Variation (CV) of plot volumes within that Area.</li>
+        <li><strong>Inputs:</strong> Implicitly uses <code>collectedData</code> filtered for the <code>currentAreaIndex</code> and current settings (<code>currentBaf</code>, <code>currentLogRule</code>, <code>currentFormClass</code>) by calling <code>calculatePlotStats</code> on the relevant subset.</li>
+        <li><strong>Logic:</strong>
+            <ol>
+                <li>Filters <code>collectedData</code> to get entries only for the <code>currentAreaIndex</code>.</li>
+                <li>Calls <code>calculatePlotStats</code> on this Area-specific subset to get plot statistics, including <code>cvV</code> (CV of plot volumes for this Area).</li>
+                <li>Checks if sufficient data exists for the Area (<code>stats && stats.numValidPlots >= 2 && stats.cvV > 0</code>).</li>
+                <li>If sufficient data exists for the Area:
+                    <ul>
+                        <li>Sets desired Error levels: <code>E10 = 10</code> (for 10%), <code>E20 = 20</code> (for 20%).</li>
+                        <li>Sets Student's t-value: <code>t = 2</code> (common approximation for reasonable confidence).</li>
+                        <li>Retrieves <code>cv = stats.cvV</code> (from the Area's stats).</li>
+                        <li>Calculates needed plots using the formula: <code>n = (t * CV / E)^2</code>
+                            <ul>
+                                <li><code>n10_float = (t * cv / E10)^2</code></li>
+                                <li><code>n20_float = (t * cv / E20)^2</code></li>
+                            </ul>
+                        </li>
+                        <li>Rounds the results up to the nearest whole number: <code>n10_rounded = ceil(n10_float)</code>, <code>n20_rounded = ceil(n20_float)</code>.</li>
+                    </ul>
+                </li>
+                <li>Updates the UI (<code>neededPlotsValue</code>) with the rounded <code>n10</code> and <code>n20</code> values or appropriate messages ("N/A (<2 plots in Area)", "--- (No data in Area)", etc.).</li>
+            </ol>
+        </li>
+        <li><strong>Output:</strong> Updates the UI display. Does not return a value directly from the main function flow.</li>
+    </ul>
+
+     <h2>8. CSV Generation and Formatting (<code>generateAndDownloadCsv</code>, <code>formatReportForCsv</code>)</h2>
+    <ul>
+        <li><strong>Purpose:</strong> Creates downloadable CSV files (one per Area) containing raw data, tally data, plot statistics, and the formatted forestry report for each Area.</li>
+        <li><strong>Inputs:</strong> Implicitly uses <code>collectedData</code> and current settings. Calls calculation functions (<code>calculateForestryReport</code>, <code>generateTallyData</code>, <code>calculatePlotStats</code>) for each Area's data subset.</li>
+        <li><strong>Logic (<code>generateAndDownloadCsv</code>):</strong>
+            <ol>
+                <li>Groups <code>collectedData</code> by Area Letter.</li>
+                <li>Iterates through each Area found:
+                    <ul>
+                       <li>Calls <code>calculateForestryReport</code>, <code>generateTallyData</code>, and <code>calculatePlotStats</code> using only the data subset for the current Area.</li>
+                       <li>(Optional) If graph generation is enabled, calls chart generation functions (<code>generateBaChart</code>, etc.) using the Area-specific report data and triggers graph downloads (<code>downloadDataUrlAsJpg</code>).</li>
+                       <li><strong>Raw Data Section:</strong> Iterates the Area's data subset, formatting each entry into a CSV row, escaping quotes in notes.</li>
+                       <li><strong>Tally Data Section:</strong> Uses the Area's tally result, iterates through it, creating rows for each Species/DBH/Logs/CutStatus combination with a count > 0.</li>
+                       <li><strong>Plot Stats Section:</strong> Uses the Area's plot stats result. Outputs plot numbers (from the Area) and their calculated VPA, followed by the summary statistics (Mean, Variance, Std Dev, CV) for the Area.</li>
+                       <li><strong>Report Section:</strong> Calls <code>formatReportForCsv</code> with the Area's report data.</li>
+                       <li>Combines all sections into a single string for the Area's CSV.</li>
+                       <li>Creates a Blob, generates a download URL, and triggers the download with a filename incorporating the Area Letter, settings/project name, and timestamp.</li>
+                   </ul>
+               </li>
+            </ol>
+        </li>
+         <li><strong>Logic (<code>formatReportForCsv</code>):</strong>
+            <ol>
+                <li>Takes the report object (for a specific Area) from <code>calculateForestryReport</code> as input.</li>
+                <li>Uses helper functions (<code>fmt</code>, <code>fmtI</code>, <code>fmtP</code>) to format numbers consistently (fixed decimals, integer, percentage).</li>
+                <li>Constructs CSV strings for each section (Summary, Stand Distribution, Species Summary 1, Species Summary 2) by arranging the calculated values from the report object under appropriate headers, matching the structure seen in the output CSV.</li>
+            </ol>
+        </li>
+        <li><strong>Output:</strong> Initiates file downloads (one CSV per Area, plus optional graphs per Area) in the browser.</li>
+    </ul>
+
+     <h2>9. Chart Generation (<code>generateBaChart</code>, <code>generateTpaChart</code>, etc.)</h2>
+    <ul>
+        <li><strong>Purpose:</strong> Visualizes key aspects of the forestry report *for a specific Area* using Chart.js.</li>
+        <li><strong>Input:</strong>
+            <ul class="input-list">
+                <li><code>report</code> object (for a specific Area) from <code>calculateForestryReport</code>.</li>
+                <li><code>canvasElement</code>: The specific (hidden) canvas to draw on.</li>
+            </ul>
+        </li>
+        <li><strong>Logic:</strong>
+            <ol>
+                <li>Gets the 2D rendering context of the provided <code>canvasElement</code>. Fills with white background.</li>
+                <li>Extracts the relevant data arrays from the Area's report object (e.g., BA/Acre Cut/Leave arrays from <code>report.standDistribution</code> for <code>generateBaChart</code>).</li>
+                <li>Defines chart labels (e.g., DBH Classes, Species names).</li>
+                <li>Creates a new Chart.js Chart instance targeting the canvas context, with the specified type (bar), data (labels, datasets reflecting Area data), and options (titles, axes, stacking, animation off, etc.).</li>
+            </ol>
+        </li>
+        <li><strong>Output:</strong>
+            <ul class="output-list">
+                <li>Returns the created Chart.js instance. The rendering happens on the provided canvas element. (The <code>generateAndDownloadCsv</code> function then converts this canvas to a JPG Data URL for download if enabled).</li>
+            </ul>
+        </li>
+    </ul>
+
+</body>
+</html>

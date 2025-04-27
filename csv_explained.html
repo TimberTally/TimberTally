@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Your TimberTally CSV Output</title>
+     <style>
+        body { font-family: sans-serif; line-height: 1.6; margin: 20px; max-width: 800px; margin-left: auto; margin-right: auto; }
+        h1 { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { color: #0056b3; margin-top: 1.5em; border-top: 1px solid #eee; padding-top: 10px; }
+        h3 { color: #333; margin-top: 1.2em; }
+        ul, ol { margin-left: 20px; }
+        li { margin-bottom: 0.5em; }
+        code { background-color: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+        strong { color: #111; }
+        .note { font-style: italic; color: #555; margin-top: 1em; border-left: 3px solid #ccc; padding-left: 10px;}
+    </style>
+</head>
+<body>
+
+    <h1>Understanding Your TimberTally CSV Output</h1>
+
+    <p class="note">The CSV file you download from TimberTally contains several sections that summarize your forest inventory data for a <strong>specific Area</strong> defined during data collection. If you collected data across multiple Areas (e.g., Area A, Area B), you will get a separate CSV file for each Area. All calculations within a given CSV file use only the data from that specific Area and the settings (BAF, Log Rule, Form Class) selected at the time of export.</p>
+
+    <h2>Section 1: Raw Data</h2>
+    <ul>
+        <li><strong>What it is:</strong> This is simply a direct copy of every single tree entry you submitted into the app *for this specific Area*. Each row represents one tree measurement from this Area.</li>
+        <li><strong>Columns:</strong>
+            <ul>
+                <li><code>PlotNumber</code>: The plot number you assigned when measuring this tree.</li>
+                <li><code>Area</code>: The Area Letter assigned to this tree (will be the same for all rows in this specific file).</li>
+                <li><code>DBH</code>: The Diameter at Breast Height (inches) you entered for this tree.</li>
+                <li><code>Species</code>: The tree species you selected.</li>
+                <li><code>Logs</code>: The merchantable height in 16-foot logs (or "Cull") you entered.</li>
+                <li><code>Cut</code>: "Yes" if you checked the 'Cut' box for this tree, "No" otherwise.</li>
+                <li><code>Notes</code>: Any notes you typed in for this specific tree entry. (Quotes within your notes are doubled <code>""</code> to work correctly in CSV).</li>
+                <li><code>Latitude</code>: The GPS Latitude, if you captured it for this entry (blank otherwise).</li>
+                <li><code>Longitude</code>: The GPS Longitude, if you captured it for this entry (blank otherwise).</li>
+            </ul>
+        </li>
+        <li><strong>How Calculated:</strong> These are your direct inputs for this Area, not calculated values (except for potential formatting like the notes).</li>
+    </ul>
+
+    <h2>Section 2: Tally Data</h2>
+    <ul>
+        <li><strong>What it is:</strong> A summary count of your raw data *from this Area*, grouping identical trees together.</li>
+        <li><strong>Columns:</strong>
+            <ul>
+                <li><code>Species</code>: The tree species.</li>
+                <li><code>DBH</code>: The Diameter at Breast Height (inches).</li>
+                <li><code>Logs</code>: The merchantable height in logs (or "Cull").</li>
+                <li><code>Cut Status</code>: Whether the tree was marked "Yes" or "No" for cutting.</li>
+                <li><code>Count</code>: How many individual tree entries *within this Area* matched this exact combination of Species, DBH, Logs, and Cut Status.</li>
+            </ul>
+        </li>
+        <li><strong>How Calculated:</strong> The app iterates through your raw data *for this Area* and counts how many times each unique combination appears.</li>
+    </ul>
+
+    <h2>Section 3: Per-Plot Volume & Stats</h2>
+    <ul>
+        <li><strong>What it is:</strong> This section analyzes the variability in estimated volume between the different sample plots measured *within this specific Area*. The Settings Used (BAF, Log Rule, Form Class) listed at the top of this section apply to these calculations.</li>
+        <li><strong>Columns/Rows:</strong>
+            <ul>
+                <li><code>Plot</code>: The unique plot number you entered *within this Area*.</li>
+                <li><code>Volume (BF/Acre)</code>: This is key! It's the total estimated Board Foot Volume Per Acre calculated using only the trees measured on this specific plot. Each tree on the plot has its volume calculated (based on DBH, Logs, Rule, FC) and expanded to a per-acre value using its TPA (<code>TPA = BAF / Tree BA</code>), and these are summed up just for that plot.</li>
+                <li><code>Num Plots</code>: The total number of different plots you entered data for *within this Area*.</li>
+                <li><code>Mean BF/Acre</code>: The simple average of the <code>Volume (BF/Acre)</code> values calculated for each individual plot *in this Area*.</li>
+                <li><code>Variance</code>: A statistical measure showing how spread out the individual plot volumes are from the mean (average) *for this Area*. Higher variance means more variability between plots in this Area. (Requires at least 2 plots in the Area).</li>
+                <li><code>Std Dev</code>: The Standard Deviation. It's the square root of the Variance and gives a measure of the typical difference between a single plot's volume and the average plot volume *for this Area*. (Requires at least 2 plots in the Area).</li>
+                <li><code>CV (%)</code>: The Coefficient of Variation. It's the Standard Deviation divided by the Mean, expressed as a percentage (<code>(Std Dev / Mean) * 100</code>) *for this Area*. It's a standard way to compare the relative variability. (Requires at least 2 plots in the Area).</li>
+            </ul>
+        </li>
+        <li><strong>How Calculated:</strong> The app first calculates the VPA for each plot *in this Area* individually, then applies standard statistical formulas (mean, variance, standard deviation, CV) to that list of plot VPA values.</li>
+    </ul>
+
+    <h2>Section 4: Forestry Report Data</h2>
+    <ul>
+        <li><strong>What it is:</strong> This is the main summary of your forest stand *for this Area*, estimating the average conditions per acre based on all the plots measured *within this Area*. The Settings Used (BAF, Log Rule, Form Class) listed at the top apply to all calculations in this section.</li>
+
+        <li><h3>Sub-Section 4.1: Overall Summary (Top key-value pairs)</h3>
+            <ul>
+                <li><code>TOTAL VOLUME/ACRE (BF)</code>: The estimated average total board foot volume on one acre *of this Area*. (Calculated by summing the VPA contribution of all trees from all plots *in this Area*, then dividing by the number of plots *in this Area*).</li>
+                <li><code>VOL/ACRE CUT (BF)</code>: The portion of the total volume/acre *for this Area* that comes from trees marked 'Cut'.</li>
+                <li><code>VOL/ACRE LEAVE (BF)</code>: The portion of the total volume/acre *for this Area* that comes from trees marked 'Leave' (Total Vol/Acre - Cut Vol/Acre).</li>
+                <li><code>AVG DBH (QMD)</code>: The Quadratic Mean Diameter (inches) *for this Area*. An average DBH weighted by tree size (basal area). Calculated from Total BA/Acre and Total TPA/Acre *for this Area*.</li>
+                <li><code>TOTAL TREES/ACRE</code>: The estimated average total number of trees (all sizes) on one acre *in this Area*. (Calculated by summing the TPA contribution of all trees from all plots *in this Area*, then dividing by the number of plots *in this Area*).</li>
+                <li><code>NUMBER OF PLOTS</code>: The total number of different plots you entered data for *within this Area* (same as in Plot Stats section).</li>
+                <li><code>TOTAL BA/ACRE (SQ FT)</code>: The estimated average Basal Area (square feet) on one acre *in this Area*. A measure of stand density. (Calculated as <code>(Total number of trees counted across all plots in this Area * BAF) / Number of Plots in this Area</code>).</li>
+                <li><code>TREES/ACRE CUT</code>: The portion of the total trees/acre *for this Area* that comes from trees marked 'Cut'.</li>
+                <li><code>TREES/ACRE LEAVE</code>: The portion of the total trees/acre *for this Area* that comes from trees marked 'Leave' (Total TPA/Acre - Cut TPA/Acre).</li>
+                <li><code>BA/ACRE CUT (SQ FT)</code>: The portion of the total BA/acre *for this Area* that comes from trees marked 'Cut'.</li>
+                <li><code>BA/ACRE LEAVE (SQ FT)</code>: The portion of the total BA/acre *for this Area* that comes from trees marked 'Leave' (Total BA/Acre - Cut BA/Acre).</li>
+            </ul>
+        </li>
+
+        <li><h3>Sub-Section 4.2: Stand Distribution (Table with DBH Classes as rows)</h3>
+            <ul>
+                <li><strong>Rows:</strong> Data *for this Area* is broken down by DBH size class (Saplings, Poletimber, Small Sawtimber, etc.).</li>
+                <li><code>STEMS (%)</code>: Percent of Total Stems. For this size class *in this Area*, what percentage of the total Area TPA/Acre does it represent? (<code>(TPA/Acre for this class in this Area) / (Total Area TPA/Acre) * 100</code>).</li>
+                <li><code>BA/ACRE (SQ FT) - Cut</code>: The average Basal Area per acre contributed by trees in this size class *in this Area* that were marked 'Cut'.</li>
+                <li><code>BA/ACRE (SQ FT) - Leave</code>: The average Basal Area per acre contributed by trees in this size class *in this Area* that were marked 'Leave'.</li>
+                <li><code>BA/ACRE (SQ FT) - Total</code>: The total average Basal Area per acre contributed by all trees in this size class *in this Area* (Cut + Leave).</li>
+                <li><code>BA (%)</code>: Percent of Total BA. For this size class *in this Area*, what percentage of the total Area BA/Acre does it represent? (<code>(BA/Acre Total for this class in this Area) / (Total Area BA/Acre) * 100</code>).</li>
+                <li><code>VOL/ACRE (BF)</code>: The average Board Foot Volume per acre contributed by trees in this size class *in this Area*.</li>
+                <li><code>VOL (%)</code>: Percent of Total Volume. For this size class *in this Area*, what percentage of the total Area Vol/Acre does it represent? (<code>(Vol/Acre for this class in this Area) / (Total Area Vol/Acre) * 100</code>).</li>
+                <li><code>TPA/ACRE Cut</code>: The average Trees Per Acre contributed by trees in this size class *in this Area* that were marked 'Cut'.</li>
+                <li><code>TPA/ACRE Leave</code>: The average Trees Per Acre contributed by trees in this size class *in this Area* that were marked 'Leave'.</li>
+                <li><strong>TOTALS Row:</strong> The sum of the values in the column above it (should match overall Area averages where applicable).</li>
+            </ul>
+        </li>
+
+        <li><h3>Sub-Section 4.3: Species Summary 1 (Stems %) (Table with Species as rows)</h3>
+            <ul>
+                <li><strong>Rows:</strong> Data *for this Area* is broken down by Species.</li>
+                <li><code>STEMS (%)</code>: Percent of Total Stems. For this species *in this Area*, what percentage of the total Area TPA/Acre does it represent? (<code>(Total TPA/Acre for this species in this Area) / (Total Area TPA/Acre) * 100</code>).</li>
+                <li><code>SAW (%)</code>: Percent of Total Stems in Sawtimber. For this species *in this Area*, what percentage of the total Area TPA/Acre is contributed by its trees that fall into any Sawtimber class (Small, Medium, or Large)?</li>
+                <li><code>POLE (%)</code>: Percent of Total Stems in Poletimber. For this species *in this Area*, what percentage of the total Area TPA/Acre is contributed by its trees that fall into the Poletimber class?</li>
+                <li><code>SAP (%)</code>: Percent of Total Stems in Saplings. For this species *in this Area*, what percentage of the total Area TPA/Acre is contributed by its trees that fall into the Sapling class?</li>
+                <li><strong>TOTALS Row:</strong> The sum of the percentages in the column above it (should approach 100%).</li>
+            </ul>
+        </li>
+
+        <li><h3>Sub-Section 4.4: Species Summary 2 (Volume) (Table with Species as rows)</h3>
+            <ul>
+                <li><strong>Rows:</strong> Data *for this Area* is broken down by Species.</li>
+                <li><code>S SAW (Vol/Acre)</code>: The average Board Foot Volume per acre contributed by trees of this species *in this Area* that are in the Small Sawtimber class (12-17.9" DBH).</li>
+                <li><code>M SAW (Vol/Acre)</code>: The average Board Foot Volume per acre contributed by trees of this species *in this Area* that are in the Medium Sawtimber class (18-23.9" DBH).</li>
+                <li><code>L SAW (Vol/Acre)</code>: The average Board Foot Volume per acre contributed by trees of this species *in this Area* that are in the Large Sawtimber class (24"+ DBH).</li>
+                <li><code>TOTAL SPEC VOL/ACRE</code>: The total average Board Foot Volume per acre contributed by all trees of this species *in this Area* (sum of S, M, L Saw for that species).</li>
+                <li><code>TOTAL VOL (%)</code>: Percent of Total Volume. For this species *in this Area*, what percentage of the total Area Vol/Acre does it represent? (<code>(Total Spec Vol/Acre for this species in this Area) / (Total Area Vol/Acre) * 100</code>).</li>
+                <li><strong>TOTALS Row:</strong> The sum of the volumes/percentages in the column above it.</li>
+            </ul>
+        </li>
+    </ul>
+
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimberTally App: Calculations Explained</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; margin: 20px; max-width: 800px; margin-left: auto; margin-right: auto; }
+        h1 { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { color: #0056b3; margin-top: 1.5em; }
+        h3 { color: #333; margin-top: 1.2em; }
+        ul, ol { margin-left: 20px; }
+        li { margin-bottom: 0.5em; }
+        code { background-color: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+        strong { color: #111; }
+        .formula { font-style: italic; color: #555; margin-left: 1em; display: block; font-size: 0.95em; }
+    </style>
+</head>
+<body>
+
+    <h1>TimberTally App: Understanding the Calculations</h1>
+
+    <p><strong>Purpose:</strong> This guide explains how the TimberTally app takes your tree measurements and turns them into useful summaries about the forest stand you measured. Think of it as looking "under the hood" at the math involved.</p>
+
+    <p><strong>Key Idea:</strong> Most forest measurements (cruises) don't measure every tree. We measure trees on sample plots and then use math to expand those measurements to estimate what's on the whole acre or stand.</p>
+
+    <h2>1. Figuring Out How Much Wood is in One Tree (Tree Volume)</h2>
+    <ul>
+        <li><strong>What it does:</strong> Calculates the usable wood volume (usually in Board Feet, BF) for a single sawtimber tree you measured.</li>
+        <li><strong>How it works:</strong>
+            <ol>
+                <li><strong>Needs:</strong> The tree's Diameter (DBH) and its merchantable height (number of Logs).</li>
+                <li><strong>Lookup:</strong> The app looks up the tree's DBH and number of logs in a built-in volume table – think of it like a big reference chart.</li>
+                <li><strong>Log Rule Choice:</strong> It picks the correct volume table based on the 'Log Rule' setting you chose (Doyle, Scribner, or International 1/4"). These rules are different standard ways to estimate volume.</li>
+                <li><strong>Doyle Special Step (Form Class):</strong> If you're using the Doyle rule, the app also uses the 'Form Class' setting you selected. Form Class accounts for how much a tree tapers (gets thinner from bottom to top). The app adjusts the standard Doyle volume up or down based on your Form Class setting compared to the standard (FC 78). Scribner and International rules in this app don't use Form Class for adjustment.</li>
+                <li><strong>Zero Volume Cases:</strong> The app correctly assigns zero volume if:
+                    <ul>
+                        <li>The tree is marked as "Cull".</li>
+                        <li>The DBH is too small (usually less than 10 inches for these tables).</li>
+                        <li>The number of logs entered is zero or invalid.</li>
+                        <li>The specific DBH/Log combination isn't listed in the chosen volume table.</li>
+                    </ul>
+                </li>
+            </ol>
+        </li>
+        <li><strong>Why it matters:</strong> This individual tree volume is the basic building block for calculating the total volume per acre.</li>
+    </ul>
+
+    <h2>2. Putting Trees into Size Categories (DBH Class)</h2>
+    <ul>
+        <li><strong>What it does:</strong> Groups trees based on their diameter (DBH) into common size classes.</li>
+        <li><strong>How it works:</strong> It simply checks the DBH you entered against these ranges:
+            <ul>
+                <li>2" - 5.9" = Sapling</li>
+                <li>6" - 11.9" = Poletimber</li>
+                <li>12" - 17.9" = Small Sawtimber</li>
+                <li>18" - 23.9" = Medium Sawtimber</li>
+                <li>24"+ = Large Sawtimber</li>
+                <li>(Anything else, like < 2" or invalid entries, gets grouped as 'Other'/'Invalid').</li>
+            </ul>
+        </li>
+        <li><strong>Why it matters:</strong> This helps understand the structure of the stand – is it mostly small young trees or large mature trees?</li>
+    </ul>
+
+    <h2>3. Counting Up Your Trees (Tally Data)</h2>
+    <ul>
+        <li><strong>What it does:</strong> Creates a simple count of how many trees you measured for each combination of Species, DBH, Logs, and whether you marked it as 'Cut' or 'Leave'.</li>
+        <li><strong>How it works:</strong> It goes through your list of entered trees and adds 1 to the count for each matching group. (e.g., "Red Oak, 14" DBH, 2 Logs, Leave" might have a count of 5 if you entered that combination five times).</li>
+        <li><strong>Why it matters:</strong> This gives a quick summary of your raw data before the per-acre calculations happen.</li>
+    </ul>
+
+    <h2>4. Estimating What's on the Whole Acre (Forestry Report Calculations)</h2>
+    <p>This is where the app combines individual tree data and expands it using the Basal Area Factor (BAF) you selected in the settings. The BAF determines how many trees per acre each measured tree represents.</p>
+    <ul>
+        <li><strong>Core Concepts Used:</strong>
+            <ul>
+                <li><strong>Basal Area (BA):</strong> The cross-sectional area of a tree trunk at breast height (4.5 ft). Calculated using DBH. It's like the "footprint" area of the tree stem. <span class="formula">Formula: BA (sq ft) = <code>0.005454 * DBH (in) * DBH (in)</code>.</span></li>
+                <li><strong>Trees Per Acre (TPA):</strong> For each tree you counted on a plot, this number tells you how many actual trees it represents on one acre. <span class="formula">Formula: TPA = <code>BAF / Tree's Basal Area</code>. Smaller trees have smaller BA, so they represent more trees per acre than larger trees when using the same BAF.</span></li>
+                <li><strong>Volume Per Acre (VPA):</strong> The volume of a single measured tree, expanded to represent volume on a per-acre basis. <span class="formula">Formula: VPA = <code>Tree Volume * TPA</code>.</span></li>
+            </ul>
+        </li>
+        <li><strong>How the Report is Built:</strong>
+            <ol>
+                <li><strong>Count Plots:</strong> First, it figures out how many different plot numbers you entered data for within the current Area. This is important for averaging.</li>
+                <li><strong>Process Each Tree:</strong> For every tree you entered in the Area:
+                    <ul>
+                        <li>Calculates its Basal Area (BA).</li>
+                        <li>Calculates the TPA it represents (<code>BAF / BA</code>).</li>
+                        <li>Gets its individual tree volume (using step #1 above).</li>
+                        <li>Calculates the VPA it represents (<code>Volume * TPA</code>).</li>
+                        <li>Keeps running totals of TPA and VPA for the whole stand (within the Area), and separately for trees marked 'Cut'.</li>
+                        <li>Also adds the tree's TPA and VPA contributions to summaries based on its Species and its DBH Class (from step #2).</li>
+                    </ul>
+                </li>
+                <li><strong>Calculate Stand Averages (for the Area):</strong> After processing all trees in the Area, it calculates:
+                    <ul>
+                        <li><strong>Total Basal Area Per Acre (BA/Acre):</strong> A measure of how crowded the stand is. It's the sum of the BA of all trees on an acre. <span class="formula">Calculated efficiently as: <code>(Total Trees Counted in Area * BAF) / Number of Plots in Area</code>.</span></li>
+                        <li><strong>Total Trees Per Acre (TPA/Acre):</strong> The average number of trees across all size classes on one acre. <span class="formula">Calculated as: <code>(Sum of all individual tree TPAs in Area) / Number of Plots in Area</code>.</span></li>
+                        <li><strong>Total Volume Per Acre (Vol/Acre):</strong> The average board foot volume on one acre. <span class="formula">Calculated as: <code>(Sum of all individual tree VPAs in Area) / Number of Plots in Area</code>.</span></li>
+                        <li><strong>Cut vs. Leave:</strong> It does the BA/Acre, TPA/Acre, and Vol/Acre calculations separately for the trees you marked 'Cut' and figures out the 'Leave' amount by subtracting Cut from the Total.</li>
+                        <li><strong>Average DBH (QMD):</strong> Calculates the Quadratic Mean Diameter. This gives you an idea of the average tree size in your stand, weighted by basal area (bigger trees have more influence than in a simple average). It's calculated from the total BA/Acre and TPA/Acre.</li>
+                    </ul>
+                </li>
+                <li><strong>Create Summary Tables (for the Area):</strong>
+                    <ul>
+                        <li><strong>Stand Distribution:</strong> Shows how the BA/Acre, TPA/Acre, and Volume/Acre are spread across the different DBH Size Classes (Sapling, Poletimber, etc.). It also shows the percentage contribution of each size class to the total BA, TPA, and Volume. Includes separate Cut/Leave values for BA and TPA within each class.</li>
+                        <li><strong>Species Summary 1 (Stems):</strong> Shows the percentage of the total stand TPA/Acre that falls into Sapling, Poletimber, and Sawtimber categories for each species. Helps understand the size distribution within each species relative to the whole stand.</li>
+                        <li><strong>Species Summary 2 (Volume):</strong> Shows the Volume/Acre (BF) contributed by each species, broken down into Small, Medium, and Large Sawtimber size classes. Also shows each species' percentage contribution to the total stand volume.</li>
+                    </ul>
+                </li>
+            </ol>
+        </li>
+        <li><strong>Why it matters:</strong> This report gives you the main results of your forest inventory – how much volume, how many trees, average size, stand structure, and species mix, all on a standard per-acre basis for the specific Area processed.</li>
+    </ul>
+
+    <h2>5. Checking How Reliable Your Measurements Are (Plot Statistics - per Area)</h2>
+    <ul>
+        <li><strong>What it does:</strong> Calculates how much the Volume Per Acre varied between your different plots *within a specific Area*.</li>
+        <li><strong>How it works:</strong>
+            <ol>
+                <li>Calculates the total Volume Per Acre (VPA) for each individual plot you measured within the Area (by summing the VPA of trees on that plot).</li>
+                <li>Uses the list of VPA values (one for each plot in the Area) to calculate:
+                    <ul>
+                        <li><strong>Mean (Average) VPA:</strong> The average volume per acre across your plots in this Area.</li>
+                        <li><strong>Standard Deviation:</strong> A measure of how spread out the plot VPA values are around the average within this Area. A higher number means more variability between plots.</li>
+                        <li><strong>Coefficient of Variation (CV %):</strong> The Standard Deviation expressed as a percentage of the Mean for this Area. This is a standard way to compare variability. <span class="formula">CV = <code>(Standard Deviation / Mean) * 100</code>.</span></li>
+                    </ul>
+                </li>
+            </ol>
+        </li>
+        <li><strong>Why it matters:</strong> High variability (high CV) within an Area means your estimate for that Area might be less precise. This CV is used to estimate if more plots are needed for that specific Area.</li>
+    </ul>
+
+    <h2>6. Estimating How Many Plots You Might Need (Needed Plots - per Area)</h2>
+    <ul>
+        <li><strong>What it does:</strong> Uses the variability between your plots within the current Area (the CV% from step #5) to estimate how many total plots you would need *for that Area* to achieve a certain level of statistical precision (e.g., being within +/- 10% or +/- 20% of the true average volume for that Area, most of the time).</li>
+        <li><strong>How it works:</strong> Uses a standard statistical formula: <span class="formula">Needed Plots = <code>((t-value * CV%) / Desired Error %)^2</code>.</span>
+            <ul>
+                <li>The app uses a common t-value of 2 (representing roughly 95% confidence for a decent number of plots).</li>
+                <li>It calculates this for both 10% and 20% desired error levels based on the current Area's CV%.</li>
+                <li>The result is rounded up to the next whole number, as you can't have part of a plot.</li>
+            </ul>
+        </li>
+        <li><strong>Why it matters:</strong> This gives you feedback on your cruising intensity for the current Area. If the needed number is much higher than the number you took *in that Area*, your average volume estimate for that specific Area might not be very precise. (Requires at least 2 plots with data in the current Area to calculate).</li>
+    </ul>
+
+     <h2>7. Saving Your Work (CSV File and Graphs - per Area)</h2>
+    <ul>
+        <li><strong>What it does:</strong> Creates output files summarizing your work, generating separate files for each distinct Area Letter found in your data.</li>
+        <li><strong>How it works:</strong>
+            <ol>
+                <li><strong>Grouping:</strong> First, it groups all your collected data by the 'Area Letter' assigned to each entry.</li>
+                <li><strong>Area Loop:</strong> It then processes each Area group one by one.</li>
+                <li><strong>Calculations (per Area):</strong> For the current Area's data, it performs all the calculations described above (Report, Tally, Plot Stats).</li>
+                <li><strong>Formatting (per Area):</strong> It organizes this Area-specific information into different sections:
+                    <ul>
+                        <li>Raw Data: Your original tree entries for this Area.</li>
+                        <li>Tally Data: The counts from step #3, using only data from this Area.</li>
+                        <li>Plot Stats: The mean, std dev, CV from step #5, using only plots from this Area, plus the VPA for each plot in this Area.</li>
+                        <li>Forestry Report: The formatted tables from step #4 (Summary, Stand Dist., Species Summaries), calculated using only data from this Area.</li>
+                    </ul>
+                </li>
+                <li><strong>CSV File (per Area):</strong> Combines all these formatted sections for the current Area into a single text file (.csv) that you can open in spreadsheet software like Excel. The filename includes the Area Letter.</li>
+                <li><strong>(Optional) Graphs (per Area):</strong> If you enabled the setting, it also generates visual charts (Bar charts) based *only* on the data for the current Area:
+                    <ul>
+                        <li>Basal Area distribution by size class (Cut vs Leave).</li>
+                        <li>Trees Per Acre distribution by size class (Cut vs Leave).</li>
+                        <li>Total Volume/Acre by Species.</li>
+                        <li>Sawtimber Volume/Acre by Species (broken down by Small, Medium, Large sawtimber).</li>
+                    </ul>
+                    It then triggers downloads for these Area-specific charts as image files (JPG), with filenames including the Area Letter.
+                </li>
+                <li><strong>Repeat:</strong> Steps 3-6 are repeated for the next Area Letter group until all Areas are processed.</li>
+            </ol>
+        </li>
+        <li><strong>Why it matters:</strong> This allows you to save, share, and further analyze your inventory data and results separately for each management unit or stratum (Area) you defined, outside the app.</li>
+    </ul>
+
+</body>
+</html>
