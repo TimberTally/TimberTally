@@ -79,12 +79,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const bafSelect = document.getElementById('bafSelect');
     const logRuleSelect = document.getElementById('logRuleSelect');
     const formClassSelect = document.getElementById('formClassSelect');
+    const formClassGroup = document.getElementById('formClassGroup');
     const generateGraphsSelect = document.getElementById('generateGraphsSelect');
     const settingsFeedback = document.getElementById('settingsFeedback');
     const manualUpdateCheckBtn = document.getElementById('manualUpdateCheckBtn');
     const updateCheckStatus = document.getElementById('updateCheckStatus');
     const showPrivacyPolicyBtn = document.getElementById('showPrivacyPolicyBtn');
-	const showReadmeBtn = document.getElementById('showReadmeBtn');
+    const showReadmeBtn = document.getElementById('showReadmeBtn');
     const showTreeKeyBtn = document.getElementById('showTreeKeyBtn');
     const speciesManagementSection = document.getElementById('speciesManagementSection');
     const toggleSpeciesMgmtBtn = document.getElementById('toggleSpeciesMgmtBtn');
@@ -133,7 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const README_URL = 'https://github.com/TimberTally/TimberTally/blob/main/README.md';
     const BA_CONST = 0.005454;
     const MIN_PLOT_NUMBER = 1;
-    const MAX_PLOT_NUMBER = 99;
+    const MAX_PLOT_NUMBER = 999;
+    const VALID_DOYLE_FORM_CLASSES = [70, 72, 74, 76, 78, 80, 82, 84, 86]; 
     const areaLetters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
     const DEFAULT_SPECIES = ["White Oak", "Red Oak", "Yellow-poplar", "Hickory", "Red Maple","Black Walnut", "Beech", "Eastern redcedar", "Elm", "Ash", "Chestnut Oak","Black Cherry", "Hackberry", "Black Gum", "MISC", "Sugar Maple"].sort();
 
@@ -229,7 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         updatePlotDisplay(); updateAreaDisplay(); renderEntries();
     }
-
+    function updateFormClassVisibility() {
+        if (!logRuleSelect || !formClassGroup) return; // Safety check
+        const selectedRule = logRuleSelect.value;
+        formClassGroup.hidden = (selectedRule !== 'Doyle');
+        // Optional: log state for debugging
+        // console.log(`Log Rule changed to: ${selectedRule}. Form Class Group hidden: ${formClassGroup.hidden}`);
+    }
     // --- Settings Functions ---
     function saveSettings() {
         try {
@@ -247,9 +255,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentBaf = parseInt(storedSettings.baf, 10) || 10;
                     currentLogRule = ['Doyle', 'Scribner', 'International'].includes(storedSettings.logRule) ? storedSettings.logRule : 'Doyle';
                     currentFormClass = parseInt(storedSettings.formClass, 10) || 78;
-                    if (![72, 74, 76, 78, 80, 82].includes(currentFormClass)) currentFormClass = 78;
-                    currentGenerateGraphs = storedSettings.generateGraphs === 'Yes' ? 'Yes' : 'No';
-                    console.log("[Settings] Loaded:", { baf: currentBaf, logRule: currentLogRule, formClass: currentFormClass, generateGraphs: currentGenerateGraphs });
+                    if (!VALID_DOYLE_FORM_CLASSES.includes(currentFormClass)) currentFormClass = 78; // Validate loaded FC using constant
+                 currentGenerateGraphs = storedSettings.generateGraphs === 'Yes' ? 'Yes' : 'No';
+                 console.log("[Settings] Loaded:", { baf: currentBaf, logRule: currentLogRule, formClass: currentFormClass, generateGraphs: currentGenerateGraphs });
                     if (bafSelect) bafSelect.value = String(currentBaf);
                     if (logRuleSelect) logRuleSelect.value = currentLogRule;
                     if (formClassSelect) formClassSelect.value = String(currentFormClass);
@@ -356,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dbhEntry && dbhEntry.hasOwnProperty(logsKey)) {
                 const baseVol = dbhEntry[logsKey];
                 if (baseVol === undefined || baseVol === null || baseVol <= 0) { volume = 0; }
-                else if (logRule === 'Doyle') { let fcInt = parseInt(formClass, 10); if (isNaN(fcInt) || ![72, 74, 76, 78, 80, 82].includes(fcInt)) fcInt = 78; volume = (fcInt === 78) ? baseVol : Math.round(baseVol * (fcInt / 78.0)); }
+                else if (logRule === 'Doyle') { let fcInt = parseInt(formClass, 10); if (isNaN(fcInt) || !VALID_DOYLE_FORM_CLASSES.includes(fcInt)) fcInt = 78; volume = (fcInt === 78) ? baseVol : Math.round(baseVol * (fcInt / 78.0)); }
                 else { volume = baseVol; }
             }
             return volume > 0 ? volume : 0;
@@ -810,6 +818,16 @@ function handleSubmitEntry() {
     if (bafSelect) bafSelect.addEventListener('change', (e) => { currentBaf = parseInt(e.target.value, 10); saveSettings(); showSettingsFeedback(`BAF set to ${currentBaf}`, false); calculateAndDisplayNeededPlots(); });
     if (logRuleSelect) logRuleSelect.addEventListener('change', (e) => { currentLogRule = e.target.value; saveSettings(); showSettingsFeedback(`Rule: ${currentLogRule}`, false); checkAndSetLogsForDbh(); calculateAndDisplayNeededPlots(); });
     if (formClassSelect) formClassSelect.addEventListener('change', (e) => { currentFormClass = parseInt(e.target.value, 10); saveSettings(); showSettingsFeedback(`Doyle FC: ${currentFormClass}`, false); calculateAndDisplayNeededPlots(); });
+    if (logRuleSelect) {
+        logRuleSelect.addEventListener('change', (e) => {
+            currentLogRule = e.target.value; // Existing line
+            saveSettings();                  // Existing line
+            showSettingsFeedback(`Rule: ${currentLogRule}`, false); // Existing line
+            checkAndSetLogsForDbh();         // Existing line
+            calculateAndDisplayNeededPlots(); // Existing line
+            updateFormClassVisibility();     // <-- ADD THIS LINE
+        });
+    }
     if (generateGraphsSelect) { generateGraphsSelect.addEventListener('change', (e) => { currentGenerateGraphs = e.target.value; saveSettings(); showSettingsFeedback(`Generate graphs set to ${currentGenerateGraphs}.`, false); if (saveCsvBtn) { saveCsvBtn.textContent = currentGenerateGraphs === 'Yes' ? 'Save Area CSV(s) & Graphs' : 'Save Area CSV(s)'; } }); if (saveCsvBtn) { saveCsvBtn.textContent = currentGenerateGraphs === 'Yes' ? 'Save Area CSV(s) & Graphs' : 'Save Area CSV(s)'; } }
     if (manualUpdateCheckBtn && updateCheckStatus && 'serviceWorker' in navigator) { manualUpdateCheckBtn.addEventListener('click', () => { if (updateStatusTimeout) clearTimeout(updateStatusTimeout); updateCheckStatus.textContent = 'Checking...'; manualUpdateCheckBtn.disabled = true; navigator.serviceWorker.ready.then(registration => registration.update()).then(reg => { if (!reg) { updateCheckStatus.textContent = 'Check failed (No SW?).'; updateStatusTimeout = setTimeout(() => { if(updateCheckStatus) updateCheckStatus.textContent = ''; }, 3000); return; } if (reg.installing) { updateCheckStatus.textContent = 'Update found, installing...'; console.log('[App] Update found via manual check (installing).'); } else if (reg.waiting) { updateCheckStatus.textContent = 'Update ready!'; console.log('[App] Update found via manual check (waiting).'); if (typeof newWorker === 'undefined' || !newWorker) { newWorker = reg.waiting; } if (typeof showUpdateBar === 'function') { showUpdateBar(); } else { console.error("showUpdateBar function not found"); } } else { updateCheckStatus.textContent = 'App is up-to-date.'; console.log('[App] No update found via manual check.'); updateStatusTimeout = setTimeout(() => { if(updateCheckStatus) updateCheckStatus.textContent = ''; }, 3000); } }).catch(err => { console.error('[App] Manual update check failed:', err); if(updateCheckStatus) updateCheckStatus.textContent = 'Check failed.'; updateStatusTimeout = setTimeout(() => { if(updateCheckStatus) updateCheckStatus.textContent = ''; }, 3000); }).finally(() => { if(manualUpdateCheckBtn) manualUpdateCheckBtn.disabled = false; }); }); } else if (!('serviceWorker' in navigator)) { if(manualUpdateCheckBtn) manualUpdateCheckBtn.disabled = true; if(updateCheckStatus) updateCheckStatus.textContent = 'Updates N/A'; }
     if (showPrivacyPolicyBtn) { showPrivacyPolicyBtn.addEventListener('click', () => { window.open(PRIVACY_POLICY_URL, '_blank', 'noopener,noreferrer'); }); } else { console.warn("Privacy Policy button element not found."); }
@@ -821,11 +839,7 @@ function handleSubmitEntry() {
     if(saveProjectBtn) saveProjectBtn.addEventListener('click', () => { if(!projectNameInput) return; const name = projectNameInput.value.trim(); if (!name) { showProjectFeedback("Enter project name.", true); return; } if (savedProjects[name] && !confirm(`Overwrite project "${name}"?`)) return; try { savedProjects[name] = JSON.parse(JSON.stringify(collectedData)); saveProjectsToStorage(); populateLoadProjectDropdown(); showProjectFeedback(`Project "${name}" saved.`); } catch (e) { showProjectFeedback(`Save Error: ${e.message}`, true); } });
     if(loadProjectBtn) loadProjectBtn.addEventListener('click', () => { if(!loadProjectSelect) return; const name = loadProjectSelect.value; if (!name) { showProjectFeedback("Select project.", true); return; } if (!savedProjects[name]) { showProjectFeedback(`Project "${name}" not found.`, true); return; } if (collectedData.length > 0 && !confirm(`Load project "${name}"? This will REPLACE your current unsaved data.`)) return; try { collectedData = JSON.parse(JSON.stringify(savedProjects[name])); if(projectNameInput) projectNameInput.value = name; renderEntries(); saveSessionData(); showProjectFeedback(`Project "${name}" loaded.`); currentLocation = null; if(locationStatus)locationStatus.textContent = 'Location not set'; } catch (e) { showProjectFeedback(`Load Error: ${e.message}`, true); collectedData = []; renderEntries(); saveSessionData(); } });
     if(deleteProjectBtn) deleteProjectBtn.addEventListener('click', () => { if(!loadProjectSelect) return; const name = loadProjectSelect.value; if (!name) { showProjectFeedback("Select project.", true); return; } if (!savedProjects[name]) { showProjectFeedback(`Project "${name}" not found.`, true); return; } if (!confirm(`Delete saved project "${name}"? This cannot be undone.`)) return; delete savedProjects[name]; saveProjectsToStorage(); populateLoadProjectDropdown(); if (projectNameInput && projectNameInput.value === name) projectNameInput.value = ''; showProjectFeedback(`Project "${name}" deleted.`); });
-    if(loadCsvBtn) loadCsvBtn.addEventListener('click', () => {
-         if(!csvFileInput) return; const file = csvFileInput.files[0]; if (!file) { showProjectFeedback("Select CSV file.", true); return; } if (!file.name.toLowerCase().endsWith('.csv')) { showProjectFeedback("Must be .csv file.", true); csvFileInput.value = null; return; }
-         const reader = new FileReader(); reader.onload = (e) => { try { const content = e.target.result; const parsedData = parseCsvAndLoadData(content); if (parsedData.length === 0) { showProjectFeedback("CSV parsed, but no valid data entries found.", true); csvFileInput.value = null; return; } let chosenArea = null; let promptCancelled = false; const promptMessage = `Enter Area Letter (A-Z) to assign to all ${parsedData.length} loaded entries from "${file.name}".\n\nWARNING: If you choose an area already containing data, this new data will be ADDED to it.`; do { chosenArea = prompt(promptMessage, areaLetters[currentAreaIndex]); if (chosenArea === null) { promptCancelled = true; break; } chosenArea = chosenArea.trim().toUpperCase(); if (chosenArea.length === 1 && areaLetters.includes(chosenArea)) { break; } else { alert("Invalid input. Please enter a single letter from A to Z."); } } while (true); if (promptCancelled) { showProjectFeedback("CSV load cancelled.", false); csvFileInput.value = null; return; } parsedData.forEach(entry => { entry.areaLetter = chosenArea; }); collectedData = collectedData.concat(parsedData); renderEntries(); saveSessionData(); showProjectFeedback(`Added ${parsedData.length} entries from "${file.name}" to Area ${chosenArea}.`); currentLocation = null; if(locationStatus)locationStatus.textContent = 'Location not set'; csvFileInput.value = null; } catch (err) { showProjectFeedback(`CSV Load Error: ${err.message}`, true, 5000); csvFileInput.value = null; } }; reader.onerror = () => { showProjectFeedback("File read error.", true); csvFileInput.value = null; }; reader.readAsText(file);
-     });
-
+    if(loadCsvBtn) loadCsvBtn.addEventListener('click', () => { if(!csvFileInput) return; const file = csvFileInput.files[0]; if (!file) { showProjectFeedback("Select CSV file.", true); return; } if (!file.name.toLowerCase().endsWith('.csv')) { showProjectFeedback("Must be .csv file.", true); csvFileInput.value = null; return; } const reader = new FileReader(); reader.onload = (e) => { try { const content = e.target.result; const parsedData = parseCsvAndLoadData(content); if (parsedData.length === 0) { showProjectFeedback("CSV parsed, but no valid data entries found.", true); csvFileInput.value = null; return; } let chosenArea = null; let promptCancelled = false; const initialPromptMessage = `Enter Area Letter (A-Z) to assign to all ${parsedData.length} loaded entries from "${file.name}".\n\nWARNING: If you choose an area already containing data, this new data will be ADDED to it and plots may be renumbered.`; do { chosenArea = prompt(initialPromptMessage, areaLetters[currentAreaIndex]); if (chosenArea === null) { promptCancelled = true; break; } chosenArea = chosenArea.trim().toUpperCase(); if (chosenArea.length === 1 && areaLetters.includes(chosenArea)) { break; } else { alert("Invalid input. Please enter a single letter from A to Z."); } } while (true); if (promptCancelled) { showProjectFeedback("CSV load cancelled.", false); csvFileInput.value = null; return; } let plotRenumberingApplied = false; let maxExistingPlotNumber = 0; const existingDataInArea = collectedData.filter(entry => entry.areaLetter === chosenArea); if (existingDataInArea.length > 0) { existingDataInArea.forEach(entry => { const plotNum = parseInt(entry.plotNumber, 10); if (!isNaN(plotNum) && plotNum > maxExistingPlotNumber) { maxExistingPlotNumber = plotNum; } }); } console.log(`Max existing plot number in Area ${chosenArea}: ${maxExistingPlotNumber}`); if (maxExistingPlotNumber > 0) { plotRenumberingApplied = true; const plotMap = {}; let nextNewPlotNumber = maxExistingPlotNumber + 1; const originalPlotNumbers = [...new Set(parsedData.map(entry => parseInt(entry.plotNumber, 10)))].filter(num => !isNaN(num)).sort((a, b) => a - b); originalPlotNumbers.forEach(originalPlot => { if (plotMap[originalPlot] === undefined) { if (nextNewPlotNumber <= MAX_PLOT_NUMBER) { plotMap[originalPlot] = nextNewPlotNumber++; } else { console.warn(`Exceeded MAX_PLOT_NUMBER (${MAX_PLOT_NUMBER}) during renumbering. Plot ${originalPlot} mapped to ${MAX_PLOT_NUMBER}`); plotMap[originalPlot] = MAX_PLOT_NUMBER; } } }); console.log("Plot renumbering map:", plotMap); parsedData.forEach(entry => { const originalPlot = parseInt(entry.plotNumber, 10); if (!isNaN(originalPlot) && plotMap[originalPlot] !== undefined) { entry.plotNumber = plotMap[originalPlot]; } entry.areaLetter = chosenArea; }); } else { parsedData.forEach(entry => { entry.areaLetter = chosenArea; }); } collectedData = collectedData.concat(parsedData); renderEntries(); saveSessionData(); let feedbackText = `Added ${parsedData.length} entries from "${file.name}" to Area ${chosenArea}.`; if (plotRenumberingApplied) { feedbackText += " Plots were automatically renumbered."; console.log("CSV Load: Plots renumbered starting after plot " + maxExistingPlotNumber); } else { console.log("CSV Load: Plots not renumbered (no existing data in area)."); } showProjectFeedback(feedbackText, false, 4000); currentLocation = null; if(locationStatus)locationStatus.textContent = 'Location not set'; csvFileInput.value = null; } catch (err) { showProjectFeedback(`CSV Load Error: ${err.message}`, true, 5000); csvFileInput.value = null; } }; reader.onerror = () => { showProjectFeedback("File read error.", true); csvFileInput.value = null; }; reader.readAsText(file); });
     // --- Compass Listeners ---
     let orientationHandler = null; const handleOrientationEvent = (event) => { let h=null, s='---'; try { if(event.absolute===true && event.alpha!==null){h=360-event.alpha;s='True (abs)';} else if(event.webkitCompassHeading!==undefined && event.webkitCompassHeading!==null){h=event.webkitCompassHeading;s='Mag (webkit)';} else if(event.alpha!==null){h=360-event.alpha;s='Mag (alpha)';} if(h!==null){h=(h+360)%360; if(compassNeedle)compassNeedle.style.transform=`translateX(-50%) rotate(${h}deg)`; if(compassHeading)compassHeading.textContent=`${h.toFixed(0)}°`; if(compassSource)compassSource.textContent=` (${s})`;} else {if(compassHeading)compassHeading.textContent=`---°`; if(compassSource)compassSource.textContent=` (No reading)`;}} catch (e) { console.error("Orientation handling error:", e); if(compassHeading)compassHeading.textContent=`ERR`; if(compassSource)compassSource.textContent=` (Error)`;}};
     if(showCompassBtn){showCompassBtn.addEventListener('click',()=>{ try{if(typeof DeviceOrientationEvent!=='undefined'){if(typeof DeviceOrientationEvent.requestPermission==='function'){DeviceOrientationEvent.requestPermission().then(p=>{if(p==='granted'){startCompass();}else{alert("Permission required for compass.");}}).catch(e=>{alert("Permission error: "+e.message);});}else{startCompass();}}else{alert("Compass features not supported by this browser.");}}catch(e){alert("Error accessing compass: "+e.message);}}); } else { console.error("showCompassBtn not found"); }
@@ -839,16 +853,22 @@ function handleSubmitEntry() {
     if (closeTreeKeyBtnBottom) { closeTreeKeyBtnBottom.addEventListener('click', closeKeyModal); }
     if (treeKeyModal) { treeKeyModal.addEventListener('click', (event) => { if (event.target === treeKeyModal) { closeKeyModal(); } }); }
 
-    // --- Initial Setup ---
     function initializeApp() {
         console.log("Initializing TimberTally application...");
         try {
             const updateNotificationElement = document.getElementById('updateNotification');
             if (updateNotificationElement) updateNotificationElement.style.display = 'none';
-            loadSettings(); initializeSpeciesManagement(); initializeProjectManagement();
-            populateDbhOptions(); populateLogsOptions(); checkAndSetLogsForDbh();
+            loadSettings(); // Load settings first
+            initializeSpeciesManagement();
+            initializeProjectManagement();
+            populateDbhOptions();
+            populateLogsOptions();
+            checkAndSetLogsForDbh(); // Check logs based on loaded settings
             loadAndPromptSessionData();
-            updatePlotDisplay(); updateAreaDisplay(); calculateAndDisplayNeededPlots();
+            updatePlotDisplay();
+            updateAreaDisplay();
+            calculateAndDisplayNeededPlots();
+            updateFormClassVisibility(); // <-- ADD THIS LINE (sets initial visibility)
             console.log("TimberTally application initialization complete.");
         } catch(initError) {
             console.error("FATAL ERROR during initialization:", initError);
