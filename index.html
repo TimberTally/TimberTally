@@ -65,7 +65,7 @@
                 </div>
                 <div class="input-group" id="formClassGroup">
                     <label for="formClassSelect">Doyle Form Class:</label>
-                    <select id="formClassSelect"> <option value="72">72</option> <option value="74">74</option> <option value="76">76</option> <option value="78" selected>78</option> <option value="80">80</option> <option value="82">82</option> </select>
+                    <select id="formClassSelect"> <option value="70">70</option> <option value="72">72</option> <option value="74">74</option> <option value="76">76</option> <option value="78" selected>78</option> <option value="80">80</option> <option value="82">82</option> <option value="84">84</option> <option value="86">86</option></select>
                 </div>
                 <div class="input-group">
                     <label for="generateGraphsSelect">Generate Graph JPGs on Save:</label>
@@ -162,7 +162,11 @@
             <h2>Manage Projects</h2>
             <div class="project-group"> <label for="projectNameInput">Current Project Name:</label> <div class="input-with-button"> <input type="text" id="projectNameInput" placeholder="Enter project name to save"> <button id="saveProjectBtn" title="Save Current Data to This Project Name">Save Project</button> </div> </div>
             <div class="project-group"> <label for="loadProjectSelect">Load Saved Project:</label> <div class="input-with-button"> <select id="loadProjectSelect"> <option value="">-- Select a project --</option> </select> <button id="loadProjectBtn" title="Load Selected Project (Replaces Current Data)">Load</button> <button id="deleteProjectBtn" class="delete-button" title="Delete Selected Saved Project">Del</button> </div> </div>
-            <div class="project-group"> <label for="csvFileInput">Load Project from CSV File:</label> <div class="input-with-button"> <input type="file" id="csvFileInput" accept=".csv" style="flex-grow: 1;"> <button id="loadCsvBtn" title="Load Data from Selected CSV">Load CSV</button> </div> </div>
+            <div class="project-group"> <label for="csvFileInput">Load Project from CSV File:</label> <div class="input-with-button">
+                 <!-- *** CHANGE IS HERE: Removed inline style *** -->
+                <input type="file" id="csvFileInput" accept=".csv">
+                <button id="loadCsvBtn" title="Load Data from Selected CSV">Load CSV</button>
+            </div> </div>
             <div id="projectMgmtFeedback" class="feedback-message" style="margin-top: 10px;"></div>
         </div>
         <!-- === END Project Management === -->
