@@ -1,4 +1,4 @@
-// --- START OF CONDENSED script.js ---
+// --- START OF script.js ---
 
 // --- Service Worker Registration and Update Handling ---
 if ('serviceWorker' in navigator) {
@@ -46,6 +46,28 @@ if ('serviceWorker' in navigator) {
     });
 } else { console.log('TimberTally: Service Workers not supported.'); }
 // --- End of Service Worker Registration ---
+
+// --- CUSTOM CHART.JS PLUGIN FOR BACKGROUND COLOR ---
+if (typeof Chart !== 'undefined') {
+    const customCanvasBackgroundColorPlugin = {
+      id: 'customCanvasBackgroundColor',
+      beforeDraw: (chart, args, options) => {
+        if (options && options.color) {
+          const {ctx} = chart;
+          ctx.save();
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.fillStyle = options.color;
+          ctx.fillRect(0, 0, chart.width, chart.height);
+          ctx.restore();
+        }
+      }
+    };
+    Chart.register(customCanvasBackgroundColorPlugin);
+    console.log("Registered customCanvasBackgroundColorPlugin for Chart.js");
+} else {
+    console.error("Chart object not found for plugin registration. Ensure Chart.js is loaded before this script.");
+}
+// --- END OF CUSTOM CHART.JS PLUGIN ---
 
 
 // --- Application Logic ---
@@ -118,10 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const treeKeyModal = document.getElementById('treeKeyModal');
     const closeTreeKeyBtn = document.getElementById('closeTreeKeyBtn');
     const closeTreeKeyBtnBottom = document.getElementById('closeTreeKeyBtnBottom');
-    const baChartCanvas = document.getElementById('baChartCanvas');
-    const tpaChartCanvas = document.getElementById('tpaChartCanvas');
-    const volSpeciesChartCanvas = document.getElementById('volSpeciesChartCanvas');
-    const volSawtimberChartCanvas = document.getElementById('volSawtimberChartCanvas');
 
     // --- Data Storage Keys ---
     const STORAGE_KEY = 'timberTallyTempSession';
@@ -135,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const BA_CONST = 0.005454;
     const MIN_PLOT_NUMBER = 1;
     const MAX_PLOT_NUMBER = 999;
-    const VALID_DOYLE_FORM_CLASSES = [70, 72, 74, 76, 78, 80, 82, 84, 86]; 
+    const VALID_DOYLE_FORM_CLASSES = [70, 72, 74, 76, 78, 80, 82, 84, 86];
     const areaLetters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
     const DEFAULT_SPECIES = ["White Oak", "Red Oak", "Yellow-poplar", "Hickory", "Red Maple","Black Walnut", "Beech", "Eastern redcedar", "Elm", "Ash", "Chestnut Oak","Black Cherry", "Hackberry", "Black Gum", "MISC", "Sugar Maple"].sort();
 
@@ -232,11 +250,9 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePlotDisplay(); updateAreaDisplay(); renderEntries();
     }
     function updateFormClassVisibility() {
-        if (!logRuleSelect || !formClassGroup) return; // Safety check
+        if (!logRuleSelect || !formClassGroup) return;
         const selectedRule = logRuleSelect.value;
         formClassGroup.hidden = (selectedRule !== 'Doyle');
-        // Optional: log state for debugging
-        // console.log(`Log Rule changed to: ${selectedRule}. Form Class Group hidden: ${formClassGroup.hidden}`);
     }
     // --- Settings Functions ---
     function saveSettings() {
@@ -255,9 +271,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentBaf = parseInt(storedSettings.baf, 10) || 10;
                     currentLogRule = ['Doyle', 'Scribner', 'International'].includes(storedSettings.logRule) ? storedSettings.logRule : 'Doyle';
                     currentFormClass = parseInt(storedSettings.formClass, 10) || 78;
-                    if (!VALID_DOYLE_FORM_CLASSES.includes(currentFormClass)) currentFormClass = 78; // Validate loaded FC using constant
-                 currentGenerateGraphs = storedSettings.generateGraphs === 'Yes' ? 'Yes' : 'No';
-                 console.log("[Settings] Loaded:", { baf: currentBaf, logRule: currentLogRule, formClass: currentFormClass, generateGraphs: currentGenerateGraphs });
+                    if (!VALID_DOYLE_FORM_CLASSES.includes(currentFormClass)) currentFormClass = 78;
+                    currentGenerateGraphs = storedSettings.generateGraphs === 'Yes' ? 'Yes' : 'No';
+                    console.log("[Settings] Loaded:", { baf: currentBaf, logRule: currentLogRule, formClass: currentFormClass, generateGraphs: currentGenerateGraphs });
                     if (bafSelect) bafSelect.value = String(currentBaf);
                     if (logRuleSelect) logRuleSelect.value = currentLogRule;
                     if (formClassSelect) formClassSelect.value = String(currentFormClass);
@@ -318,37 +334,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function isAnyCheckboxChecked() { return entriesTableBody && entriesTableBody.querySelector('input[type="checkbox"]:checked') !== null; }
 
-    // --- CSV Parsing Function (Simplified) ---
+    // --- CSV Parsing Function ---
     function parseCsvAndLoadData(csvContent) {
-        const lines = csvContent.split(/\r?\n/); let headerIndex = -1; let headers = [];
-        const expectedHeaderStart = 'plotnumber,dbh,species';
-        for(let i = 0; i < lines.length; i++) { const cleanLine = lines[i].trim().toLowerCase().replace(/\s/g, ''); if (cleanLine.startsWith(expectedHeaderStart)) { headerIndex = i; headers = lines[i].trim().split(',').map(h => h.trim().toLowerCase()); break; } }
-        if (headerIndex === -1) throw new Error("CSV header 'PlotNumber,DBH,Species...' not found.");
-        const idx = { p: headers.indexOf('plotnumber'), d: headers.indexOf('dbh'), sp: headers.indexOf('species'), l: headers.indexOf('logs'), c: headers.indexOf('cut'), n: headers.indexOf('notes'), lat: headers.indexOf('latitude'), lon: headers.indexOf('longitude') };
-        const requiredIndices = [idx.p, idx.d, idx.sp, idx.l, idx.c]; if (requiredIndices.some(i => i === -1)) { throw new Error("CSV missing required columns (PlotNumber, DBH, Species, Logs, Cut)."); }
-        const parsedData = []; const requiredColsCount = Math.max(...requiredIndices, idx.n, idx.lat, idx.lon) + 1;
-        for (let i = headerIndex + 1; i < lines.length; i++) {
-            const line = lines[i].trim(); if (!line || line.startsWith('---') || line.startsWith(',') || line.toLowerCase().startsWith('species,dbh,logs,cut status,count')) continue;
-            const values = []; let currentVal = ''; let inQuotes = false;
-            for (let j = 0; j < line.length; j++) { const char = line[j]; const nextChar = line[j+1]; if (char === '"' && inQuotes && nextChar === '"') { currentVal += '"'; j++; } else if (char === '"') { inQuotes = !inQuotes; } else if (char === ',' && !inQuotes) { values.push(currentVal.trim()); currentVal = ''; } else { currentVal += char; } } values.push(currentVal.trim());
-            if (values.length < requiredIndices.length) { console.warn(`Skipping malformed row ${i + 1}. Not enough required columns.`); continue; }
-            try {
-                const plotNumStr = values[idx.p]; const dbhStr = values[idx.d]; const specStr = values[idx.sp]; const logsStr = values[idx.l]; const cutStr = (values[idx.c] || 'No').trim();
-                const notesStr = idx.n > -1 ? (values[idx.n] || '') : ''; const latStr = idx.lat > -1 ? values[idx.lat] : null; const lonStr = idx.lon > -1 ? values[idx.lon] : null;
-                if (!plotNumStr || !dbhStr || !specStr || !logsStr || !cutStr) { console.warn(`Skipping row ${i + 1}: Missing essential fields.`); continue; }
-                const plotNum = parseInt(plotNumStr, 10); if (isNaN(plotNum)) { console.warn(`Skipping row ${i + 1}: PlotNumber NaN ('${plotNumStr}').`); continue; }
-                const lat = latStr !== null && latStr !== '' ? parseFloat(latStr) : null; const lon = lonStr !== null && lonStr !== '' ? parseFloat(lonStr) : null;
-                parsedData.push({ id: Date.now() + i, plotNumber: plotNum, dbh: dbhStr, species: specStr, logs: logsStr, cutStatus: cutStr.toLowerCase() === 'yes' ? 'Yes' : 'No', notes: notesStr, location: (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) ? { lat: lat, lon: lon } : null });
-            } catch (parseError) { console.warn(`Skipping row ${i + 1} due to parsing error:`, parseError); }
+        const lines = csvContent.split(/\r?\n/);
+        let headerIndex = -1;
+        let headers = [];
+        for(let i = 0; i < lines.length; i++) {
+            const currentLine = lines[i].trim();
+            if (!currentLine) continue;
+            const potentialHeadersNormalized = currentLine.toLowerCase().split(',').map(h => h.trim().replace(/\s/g, ''));
+            if (potentialHeadersNormalized.includes('plotnumber') &&
+                potentialHeadersNormalized.includes('dbh') &&
+                potentialHeadersNormalized.includes('species') &&
+                potentialHeadersNormalized.includes('logs') &&
+                potentialHeadersNormalized.includes('cut')) {
+                headerIndex = i;
+                headers = lines[i].trim().split(',').map(h => h.trim().toLowerCase());
+                break;
+            }
         }
-        console.log(`CSV Parsed. ${parsedData.length} entries found.`); return parsedData;
+        if (headerIndex === -1) throw new Error("CSV header containing 'PlotNumber, DBH, Species, Logs, Cut' not found.");
+
+        const idx = {
+            p: headers.indexOf('plotnumber'), d: headers.indexOf('dbh'), sp: headers.indexOf('species'),
+            l: headers.indexOf('logs'), c: headers.indexOf('cut'), n: headers.indexOf('notes'),
+            lat: headers.indexOf('latitude'), lon: headers.indexOf('longitude')
+        };
+        const requiredHeaderNames = ['plotnumber', 'dbh', 'species', 'logs', 'cut'];
+        const missingHeaders = requiredHeaderNames.filter(hName => headers.indexOf(hName) === -1);
+        if (missingHeaders.length > 0) throw new Error(`CSV missing required header columns: ${missingHeaders.join(', ')}.`);
+
+        const parsedData = [];
+        for (let i = headerIndex + 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line || line.startsWith('---') || line.startsWith(',') || line.toLowerCase().startsWith('species,dbh,logs,cut status,count')) continue;
+            const values = []; let currentVal = ''; let inQuotes = false;
+            for (let j = 0; j < line.length; j++) {
+                const char = line[j]; const nextChar = line[j+1];
+                if (char === '"' && inQuotes && nextChar === '"') { currentVal += '"'; j++; }
+                else if (char === '"') { inQuotes = !inQuotes; }
+                else if (char === ',' && !inQuotes) { values.push(currentVal.trim()); currentVal = ''; }
+                else { currentVal += char; }
+            }
+            values.push(currentVal.trim());
+            const maxIndexUsed = Math.max(idx.p, idx.d, idx.sp, idx.l, idx.c, (idx.n > -1 ? idx.n : -1), (idx.lat > -1 ? idx.lat : -1), (idx.lon > -1 ? idx.lon : -1));
+            if (values.length <= maxIndexUsed) { console.warn(`Skipping malformed row ${i + 1}: Not enough columns. Line: "${line}"`); continue; }
+            try {
+                const plotNumStr = values[idx.p], dbhStr = values[idx.d], specStr = values[idx.sp], logsStr = values[idx.l], cutStr = (values[idx.c] || 'No').trim();
+                const notesStr = (idx.n > -1 && values[idx.n]) ? values[idx.n] : '';
+                const latStr = (idx.lat > -1 && values[idx.lat]) ? values[idx.lat] : null;
+                const lonStr = (idx.lon > -1 && values[idx.lon]) ? values[idx.lon] : null;
+                if (!plotNumStr || !dbhStr || !specStr || !logsStr) { console.warn(`Skipping row ${i + 1}: Missing essential fields.`); continue; }
+                const plotNum = parseInt(plotNumStr, 10); if (isNaN(plotNum)) { console.warn(`Skipping row ${i + 1}: PlotNumber NaN.`); continue; }
+                const lat = latStr ? parseFloat(latStr) : null; const lon = lonStr ? parseFloat(lonStr) : null;
+                parsedData.push({
+                    id: Date.now() + i, plotNumber: plotNum, dbh: dbhStr, species: specStr, logs: logsStr,
+                    cutStatus: cutStr.toLowerCase() === 'yes' ? 'Yes' : 'No', notes: notesStr,
+                    location: (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) ? { lat: lat, lon: lon } : null
+                });
+            } catch (parseError) { console.warn(`Skipping row ${i + 1} due to parsing error:`, parseError, `Line: "${line}"`); }
+        }
+        console.log(`CSV Parsed. ${parsedData.length} entries found.`);
+        return parsedData;
     }
 
     // --- Tally Logic ---
     function generateTallyData(dataSubset) {
         const tally = {}; try { dataSubset.forEach((entry) => { if (!entry) return; const { species, dbh, logs, cutStatus } = entry; if (!species || !dbh || !logs || !cutStatus) return; const kS=String(species), kD=String(dbh), kL=String(logs), kC=String(cutStatus); if (!tally[kS]) tally[kS]={}; if (!tally[kS][kD]) tally[kS][kD]={}; if (!tally[kS][kD][kL]) tally[kS][kD][kL]={}; if (!tally[kS][kD][kL][kC]) tally[kS][kD][kL][kC]=0; tally[kS][kD][kL][kC]++; }); } catch (error) { console.error("Tally Gen Error:", error); } return tally;
     }
-    function displayTallyResults(tallyData) { if(!tallyResultsContainer) return; tallyResultsContainer.innerHTML = ''; try { const speciesKeys = Object.keys(tallyData).sort(); if (speciesKeys.length === 0) { tallyResultsContainer.innerHTML = '<p class="no-tally-data">No data to tally.</p>'; return; } speciesKeys.forEach(species => { const speciesDiv = document.createElement('div'); speciesDiv.classList.add('tally-species'); speciesDiv.innerHTML = `<h3>${species}</h3>`; const dbhKeys = Object.keys(tallyData[species]).sort((a,b) => Number(a)-Number(b)); dbhKeys.forEach(dbh => { speciesDiv.innerHTML += `<h4>DBH: ${dbh}</h4>`; const logKeys = Object.keys(tallyData[species][dbh]).sort((a,b) => { if(a==='Cull') return 1; if(b==='Cull') return -1; const nA=parseFloat(a),nB=parseFloat(b); return isNaN(nA)?1:isNaN(nB)?-1:nA-nB; }); logKeys.forEach(logs => { const counts = tallyData[species][dbh][logs]; const cut = counts['Yes']||0; const notCut = counts['No']||0; if (cut > 0) { const div=document.createElement('div'); div.classList.add('tally-log-item'); div.innerHTML = `<span class="log-label">Logs: ${logs} (Cut) - </span><span class="log-count">Count: ${cut}</span>`; speciesDiv.appendChild(div); } if (notCut > 0) { const div=document.createElement('div'); div.classList.add('tally-log-item'); div.innerHTML = `<span class="log-label">Logs: ${logs} (Not Cut) - </span><span class="log-count">Count: ${notCut}</span>`; speciesDiv.appendChild(div); } }); }); tallyResultsContainer.appendChild(speciesDiv); }); } catch (error) { console.error("Tally Display Error:", error); tallyResultsContainer.innerHTML = `<p class="no-tally-data" style="color: red;">Error displaying tally.</p>`; } }
+    function displayTallyResults(tallyData) { if(!tallyResultsContainer) return; tallyResultsContainer.innerHTML = ''; try { const speciesKeys = Object.keys(tallyData).sort(); if (speciesKeys.length === 0) { tallyResultsContainer.innerHTML = '<p class="no-tally-data">No data to tally.</p>'; return; } speciesKeys.forEach(species => { const speciesDiv = document.createElement('div'); speciesDiv.classList.add('tally-species'); speciesDiv.innerHTML = `<h3>${species}</h3>`; const dbhKeys = Object.keys(tallyData[species]).sort((a,b) => Number(a)-Number(b)); dbhKeys.forEach(dbh => { speciesDiv.innerHTML += `<h4>DBH: ${dbh}</h4>`; const logKeys = Object.keys(tallyData[species][dbh]).sort((a,b)=>{ if(a==='Cull')return 1; if(b==='Cull')return -1; const nA=parseFloat(a),nB=parseFloat(b); return isNaN(nA)?1:isNaN(nB)?-1:nA-nB; }); logKeys.forEach(logs => { const counts = tallyData[species][dbh][logs]; const cut = counts['Yes']||0; const notCut = counts['No']||0; if (cut > 0) { const div=document.createElement('div'); div.classList.add('tally-log-item'); div.innerHTML = `<span class="log-label">Logs: ${logs} (Cut) - </span><span class="log-count">Count: ${cut}</span>`; speciesDiv.appendChild(div); } if (notCut > 0) { const div=document.createElement('div'); div.classList.add('tally-log-item'); div.innerHTML = `<span class="log-label">Logs: ${logs} (Not Cut) - </span><span class="log-count">Count: ${notCut}</span>`; speciesDiv.appendChild(div); } }); }); tallyResultsContainer.appendChild(speciesDiv); }); } catch (error) { console.error("Tally Display Error:", error); tallyResultsContainer.innerHTML = `<p class="no-tally-data" style="color: red;">Error displaying tally.</p>`; } }
 
     // --- Forestry Report Calculation Logic ---
     function getTreeVolume(dbhStr, logsStr, logRule, formClass = 78) {
@@ -392,25 +446,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function calculateAndDisplayNeededPlots() { if (!neededPlotsValue) return; const currentLetter = areaLetters[currentAreaIndex]; const areaData = collectedData.filter(entry => entry.areaLetter === currentLetter); const plotCountInArea = new Set(areaData.map(e => e.plotNumber)).size; const stats = calculatePlotStats(areaData, currentBaf, currentLogRule, currentFormClass); let displayValue = "---"; let logMessage = `Calculating needed plots for Area ${currentLetter}: `; if (stats && plotCountInArea >= 2 && stats.cvV > 0) { const E10 = 10; const E20 = 20; const t = 2; const cv = stats.cvV; const n10_float = Math.pow((t * cv / E10), 2); const n10_rounded = Math.ceil(n10_float); const n20_float = Math.pow((t * cv / E20), 2); const n20_rounded = Math.ceil(n20_float); displayValue = `10%: ${n10_rounded} / 20%: ${n20_rounded}`; logMessage += `CV=${cv.toFixed(1)}%, n(10%)=${n10_float.toFixed(2)}->${n10_rounded}, n(20%)=${n20_float.toFixed(2)}->${n20_rounded}. (${plotCountInArea} plots in area)`; } else if (areaData.length > 0 && plotCountInArea < 2) { displayValue = "N/A (<2 plots in Area)"; logMessage += `N/A (<2 plots in this area).`; } else if (areaData.length === 0) { displayValue = "--- (No data in Area)"; logMessage += `--- (No data in this area).`; } else { displayValue = "--- (Calc Error?)"; logMessage += `--- (Zero CV or calculation error in area).`; } neededPlotsValue.textContent = displayValue; console.log(logMessage); }
 
     // --- Chart Generation Functions ---
-    function destroyExistingChart(canvasId) {
+    function destroyExistingChart(canvasId) { // This function might not be used if you're creating new canvases each time
         const existingChart = Chart.getChart(canvasId);
         if (existingChart) {
             existingChart.destroy();
         }
     }
 
-    // --- Chart Generation Functions (Modified for Dynamic Canvases) ---
-
     /** Generates BA Distribution Chart ON A GIVEN CANVAS */
-    function generateBaChart(report, canvasElement) { // <-- Accepts canvasElement parameter
+    function generateBaChart(report, canvasElement) {
         if (!canvasElement || !report?.standDistribution) {
              console.error("generateBaChart: Invalid canvasElement or report data.");
-             return null; // Indicate failure
-        }
-        const ctx = canvasElement.getContext('2d');
-        if (!ctx) {
-            console.error("generateBaChart: Failed to get 2D context.");
-            return null;
+             return null;
         }
         const dist = report.standDistribution;
         const labels = ['Sapling', 'Poletimber', 'S Saw', 'M Saw', 'L Saw', 'Other'];
@@ -419,24 +466,113 @@ document.addEventListener('DOMContentLoaded', () => {
         const cutData = labels.map(lbl => dist[Object.keys(classMap).find(key => classMap[key] === lbl)]?.baSqFtPerAcreCut || 0);
 
         try {
-            // Return the Chart instance for potential future use (like waiting for render)
-            return new Chart(ctx, {
-                type: 'bar', data: { labels: labels, datasets: [ { label: 'Leave BA/Acre', data: leaveData, backgroundColor: 'rgba(75, 192, 192, 0.6)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 }, { label: 'Cut BA/Acre', data: cutData, backgroundColor: 'rgba(255, 99, 132, 0.6)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1 } ] },
+            return new Chart(canvasElement, {
+                type: 'bar',
+                data: { labels: labels, datasets: [ { label: 'Leave BA/Acre', data: leaveData, backgroundColor: 'rgba(75, 192, 192, 0.6)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 }, { label: 'Cut BA/Acre', data: cutData, backgroundColor: 'rgba(255, 99, 132, 0.6)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1 } ] },
                 options: {
-                    animation: false, // Turn off animation for faster toDataURL
-                    plugins: { title: { display: true, text: 'Basal Area Distribution (SqFt/Acre)', font: { size: 16 } }, tooltip: { mode: 'index' } },
-                    responsive: false, // Required for off-screen canvas sizing
-                    maintainAspectRatio: false, // Required for off-screen canvas sizing
-                    scales: { x: { stacked: true, title: { display: true, text: 'DBH Class' } }, y: { stacked: true, title: { display: true, text: 'BA / Acre (Sq Ft)' }, beginAtZero: true } }
+                    animation: false,
+                    plugins: {
+                        customCanvasBackgroundColor: { color: 'white' },
+                        title: { display: true, text: 'Basal Area Distribution (SqFt/Acre)', font: { size: 18, weight: 'bold' }, color: '#000000' },
+                        tooltip: { mode: 'index' }
+                    },
+                    responsive: false, maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, title: { display: true, text: 'DBH Class', font: { size: 14, weight: 'bold' }, color: '#000000' } },
+                        y: { stacked: true, title: { display: true, text: 'BA / Acre (Sq Ft)', font: { size: 14, weight: 'bold' }, color: '#000000' }, beginAtZero: true }
+                    }
                  }
             });
-        } catch (error) {
-            console.error("Error creating BA Chart:", error);
-            return null;
-        }
+        } catch (error) { console.error("Error creating BA Chart:", error); return null; }
     }
 
-    function downloadDataUrlAsJpg(dataUrl, filename) {
+    /** Generates TPA Distribution Chart ON A GIVEN CANVAS */
+    function generateTpaChart(report, canvasElement) {
+        if (!canvasElement || !report?.standDistribution) { console.error("generateTpaChart: Invalid canvasElement or report data."); return null; }
+        const dist = report.standDistribution;
+        const labels = ['Sapling', 'Poletimber', 'S Saw', 'M Saw', 'L Saw', 'Other'];
+        const classMap = { 'Sapling': 'Sapling', 'Poletimber': 'Poletimber', 'Small Sawtimber': 'S Saw', 'Medium Sawtimber': 'M Saw', 'Large Sawtimber': 'L Saw', 'Other': 'Other' };
+        const leaveData = labels.map(lbl => dist[Object.keys(classMap).find(key => classMap[key] === lbl)]?.tpaPerAcreLeave || 0);
+        const cutData = labels.map(lbl => dist[Object.keys(classMap).find(key => classMap[key] === lbl)]?.tpaPerAcreCut || 0);
+        try {
+             return new Chart(canvasElement, {
+                type: 'bar', data: { labels: labels, datasets: [ { label: 'Leave TPA', data: leaveData, backgroundColor: 'rgba(75, 192, 192, 0.6)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 }, { label: 'Cut TPA', data: cutData, backgroundColor: 'rgba(255, 99, 132, 0.6)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1 } ] },
+                options: {
+                    animation: false,
+                    plugins: {
+                        customCanvasBackgroundColor: { color: 'white' },
+                        title: { display: true, text: 'Trees Per Acre Distribution', font: { size: 18, weight: 'bold' }, color: '#000000' },
+                        tooltip: { mode: 'index' }
+                    },
+                    responsive: false, maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, title: { display: true, text: 'DBH Class', font: { size: 14, weight: 'bold' }, color: '#000000' } },
+                        y: { stacked: true, title: { display: true, text: 'Trees / Acre', font: { size: 14, weight: 'bold' }, color: '#000000' }, beginAtZero: true }
+                    }
+                }
+            });
+        } catch (error) { console.error("Error creating TPA Chart:", error); return null; }
+    }
+
+    /** Generates Volume by Species Chart ON A GIVEN CANVAS */
+    function generateVolSpeciesChart(report, canvasElement) {
+        if (!canvasElement || !report?.speciesSummary2) { console.error("generateVolSpeciesChart: Invalid canvasElement or report data."); return null; }
+        const speciesVol = report.speciesSummary2;
+        const sortedSpecies = Object.entries(speciesVol).filter(([spec, data]) => spec !== 'TOTALS' && data && data.totalSpeciesVolPerAcre > 0).sort(([, dataA], [, dataB]) => dataB.totalSpeciesVolPerAcre - dataA.totalSpeciesVolPerAcre);
+        const labels = sortedSpecies.map(([spec]) => spec);
+        const data = sortedSpecies.map(([, specData]) => specData.totalSpeciesVolPerAcre);
+        try {
+            return new Chart(canvasElement, {
+                type: 'bar', data: { labels: labels, datasets: [{ label: 'Total Vol/Acre', data: data, backgroundColor: 'rgba(54, 162, 235, 0.6)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 }] },
+                options: {
+                    animation: false, indexAxis: 'y',
+                    plugins: {
+                        customCanvasBackgroundColor: { color: 'white' },
+                        title: { display: true, text: 'Volume by Species (BF/Acre)', font: { size: 18, weight: 'bold' }, color: '#000000' },
+                        legend: { display: false }
+                    },
+                    responsive: false, maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'Board Feet / Acre', font: { size: 14, weight: 'bold' }, color: '#000000' }, beginAtZero: true },
+                        y: { title: { display: true, text: 'Species', font: { size: 14, weight: 'bold' }, color: '#000000' } }
+                    }
+                 }
+            });
+         } catch (error) { console.error("Error creating Vol Species Chart:", error); return null; }
+    }
+
+    /** Generates Sawtimber Volume by Species Chart ON A GIVEN CANVAS */
+    function generateVolSawtimberChart(report, canvasElement) {
+        if (!canvasElement || !report?.speciesSummary2) { console.error("generateVolSawtimberChart: Invalid canvasElement or report data."); return null; }
+        const speciesVol = report.speciesSummary2;
+        const sortedSpecies = Object.entries(speciesVol).filter(([spec, data]) => spec !== 'TOTALS' && data && (data.volSmallPerAcre > 0 || data.volMediumPerAcre > 0 || data.volLargePerAcre > 0))
+                               .map(([spec, data]) => ({ species: spec, small: data.volSmallPerAcre || 0, medium: data.volMediumPerAcre || 0, large: data.volLargePerAcre || 0, totalSaw: (data.volSmallPerAcre || 0) + (data.volMediumPerAcre || 0) + (data.volLargePerAcre || 0) }))
+                               .sort((a, b) => b.totalSaw - a.totalSaw);
+        const labels = sortedSpecies.map(item => item.species);
+        const smallData = sortedSpecies.map(item => item.small);
+        const mediumData = sortedSpecies.map(item => item.medium);
+        const largeData = sortedSpecies.map(item => item.large);
+        try {
+            return new Chart(canvasElement, {
+                type: 'bar', data: { labels: labels, datasets: [ { label: 'S Saw Vol/Acre (12-17.9")', data: smallData, backgroundColor: 'rgba(255, 206, 86, 0.6)', borderColor: 'rgba(255, 206, 86, 1)', borderWidth: 1 }, { label: 'M Saw Vol/Acre (18-23.9")', data: mediumData, backgroundColor: 'rgba(255, 159, 64, 0.6)', borderColor: 'rgba(255, 159, 64, 1)', borderWidth: 1 }, { label: 'L Saw Vol/Acre (24"+)', data: largeData, backgroundColor: 'rgba(153, 102, 255, 0.6)', borderColor: 'rgba(153, 102, 255, 1)', borderWidth: 1 } ] },
+                options: {
+                    animation: false,
+                    plugins: {
+                        customCanvasBackgroundColor: { color: 'white' },
+                        title: { display: true, text: 'Sawtimber Volume Distribution by Species (BF/Acre)', font: { size: 18, weight: 'bold' }, color: '#000000' },
+                        tooltip: { mode: 'index' }
+                    },
+                    responsive: false, maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, title: { display: true, text: 'Species', font: { size: 14, weight: 'bold' }, color: '#000000' } },
+                        y: { stacked: true, title: { display: true, text: 'Board Feet / Acre', font: { size: 14, weight: 'bold' }, color: '#000000' }, beginAtZero: true }
+                    }
+                }
+            });
+         } catch (error) { console.error("Error creating Sawtimber Vol Chart:", error); return null; }
+    }
+
+    function downloadDataUrlAsJpg(dataUrl, filename) { // Renamed but handles PNG too
         if (!dataUrl || !filename) {
             console.error("downloadDataUrlAsJpg: Missing dataUrl or filename.");
             return;
@@ -456,342 +592,112 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /** Generates TPA Distribution Chart ON A GIVEN CANVAS */
-    function generateTpaChart(report, canvasElement) { // <-- Accepts canvasElement parameter
-        if (!canvasElement || !report?.standDistribution) {
-            console.error("generateTpaChart: Invalid canvasElement or report data.");
-            return null;
-        }
-        const ctx = canvasElement.getContext('2d');
-         if (!ctx) {
-            console.error("generateTpaChart: Failed to get 2D context.");
-            return null;
-        }
-        const dist = report.standDistribution;
-        const labels = ['Sapling', 'Poletimber', 'S Saw', 'M Saw', 'L Saw', 'Other'];
-        const classMap = { 'Sapling': 'Sapling', 'Poletimber': 'Poletimber', 'Small Sawtimber': 'S Saw', 'Medium Sawtimber': 'M Saw', 'Large Sawtimber': 'L Saw', 'Other': 'Other' };
-        const leaveData = labels.map(lbl => dist[Object.keys(classMap).find(key => classMap[key] === lbl)]?.tpaPerAcreLeave || 0);
-        const cutData = labels.map(lbl => dist[Object.keys(classMap).find(key => classMap[key] === lbl)]?.tpaPerAcreCut || 0);
-
-        try {
-             return new Chart(ctx, {
-                type: 'bar', data: { labels: labels, datasets: [ { label: 'Leave TPA', data: leaveData, backgroundColor: 'rgba(75, 192, 192, 0.6)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 }, { label: 'Cut TPA', data: cutData, backgroundColor: 'rgba(255, 99, 132, 0.6)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1 } ] },
-                options: {
-                    animation: false,
-                    plugins: { title: { display: true, text: 'Trees Per Acre Distribution', font: { size: 16 } }, tooltip: { mode: 'index' } },
-                    responsive: false, maintainAspectRatio: false,
-                    scales: { x: { stacked: true, title: { display: true, text: 'DBH Class' } }, y: { stacked: true, title: { display: true, text: 'Trees / Acre' }, beginAtZero: true } }
-                }
-            });
-        } catch (error) {
-             console.error("Error creating TPA Chart:", error);
-             return null;
-        }
-    }
-
-    /** Generates Volume by Species Chart ON A GIVEN CANVAS */
-    function generateVolSpeciesChart(report, canvasElement) { // <-- Accepts canvasElement parameter
-        if (!canvasElement || !report?.speciesSummary2) {
-             console.error("generateVolSpeciesChart: Invalid canvasElement or report data.");
-             return null;
-        }
-        const ctx = canvasElement.getContext('2d');
-         if (!ctx) {
-            console.error("generateVolSpeciesChart: Failed to get 2D context.");
-            return null;
-        }
-        const speciesVol = report.speciesSummary2;
-        const sortedSpecies = Object.entries(speciesVol).filter(([spec, data]) => spec !== 'TOTALS' && data && data.totalSpeciesVolPerAcre > 0).sort(([, dataA], [, dataB]) => dataB.totalSpeciesVolPerAcre - dataA.totalSpeciesVolPerAcre);
-        const labels = sortedSpecies.map(([spec]) => spec);
-        const data = sortedSpecies.map(([, specData]) => specData.totalSpeciesVolPerAcre);
-
-        try {
-            return new Chart(ctx, {
-                type: 'bar', data: { labels: labels, datasets: [{ label: 'Total Vol/Acre', data: data, backgroundColor: 'rgba(54, 162, 235, 0.6)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 }] },
-                options: {
-                    animation: false,
-                    indexAxis: 'y',
-                    plugins: { title: { display: true, text: 'Volume by Species (BF/Acre)', font: { size: 16 } }, legend: { display: false } },
-                    responsive: false, maintainAspectRatio: false,
-                    scales: { x: { title: { display: true, text: 'Board Feet / Acre' }, beginAtZero: true }, y: { title: { display: true, text: 'Species' } } }
-                 }
-            });
-         } catch (error) {
-             console.error("Error creating Vol Species Chart:", error);
-             return null;
-         }
-    }
-
-    /** Generates Sawtimber Volume by Species Chart ON A GIVEN CANVAS */
-    function generateVolSawtimberChart(report, canvasElement) { // <-- Accepts canvasElement parameter
-        if (!canvasElement || !report?.speciesSummary2) {
-             console.error("generateVolSawtimberChart: Invalid canvasElement or report data.");
-             return null;
-        }
-        const ctx = canvasElement.getContext('2d');
-         if (!ctx) {
-            console.error("generateVolSawtimberChart: Failed to get 2D context.");
-            return null;
-        }
-        const speciesVol = report.speciesSummary2;
-        const sortedSpecies = Object.entries(speciesVol).filter(([spec, data]) => spec !== 'TOTALS' && data && (data.volSmallPerAcre > 0 || data.volMediumPerAcre > 0 || data.volLargePerAcre > 0))
-                               .map(([spec, data]) => ({
-                                   species: spec,
-                                   small: data.volSmallPerAcre || 0,
-                                   medium: data.volMediumPerAcre || 0,
-                                   large: data.volLargePerAcre || 0,
-                                   totalSaw: (data.volSmallPerAcre || 0) + (data.volMediumPerAcre || 0) + (data.volLargePerAcre || 0)
-                               }))
-                               .sort((a, b) => b.totalSaw - a.totalSaw);
-
-        const labels = sortedSpecies.map(item => item.species);
-        const smallData = sortedSpecies.map(item => item.small);
-        const mediumData = sortedSpecies.map(item => item.medium);
-        const largeData = sortedSpecies.map(item => item.large);
-
-        try {
-            return new Chart(ctx, {
-                type: 'bar', data: { labels: labels, datasets: [ { label: 'S Saw Vol/Acre (12-17.9")', data: smallData, backgroundColor: 'rgba(255, 206, 86, 0.6)', borderColor: 'rgba(255, 206, 86, 1)', borderWidth: 1 }, { label: 'M Saw Vol/Acre (18-23.9")', data: mediumData, backgroundColor: 'rgba(255, 159, 64, 0.6)', borderColor: 'rgba(255, 159, 64, 1)', borderWidth: 1 }, { label: 'L Saw Vol/Acre (24"+)', data: largeData, backgroundColor: 'rgba(153, 102, 255, 0.6)', borderColor: 'rgba(153, 102, 255, 1)', borderWidth: 1 } ] },
-                options: {
-                    animation: false,
-                    plugins: { title: { display: true, text: 'Sawtimber Volume Distribution by Species (BF/Acre)', font: { size: 16 } }, tooltip: { mode: 'index' } },
-                    responsive: false, maintainAspectRatio: false,
-                    scales: { x: { stacked: true, title: { display: true, text: 'Species' } }, y: { stacked: true, title: { display: true, text: 'Board Feet / Acre' }, beginAtZero: true } }
-                }
-            });
-         } catch (error) {
-             console.error("Error creating Sawtimber Vol Chart:", error);
-             return null;
-         }
-    }
-    function downloadCanvasAsJpg(canvasElement, filename) { if (!canvasElement) { console.error("Download failed: Canvas element not found."); return; } try { const dataUrl = canvasElement.toDataURL('image/jpeg', 0.9); const link = document.createElement('a'); link.href = dataUrl; link.download = filename; link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); console.log(`Initiated download for: ${filename}`); } catch (error) { console.error(`Error generating or downloading ${filename}:`, error); showFeedback(`Error saving graph ${filename}. See console.`, true, 5000); } }
-
     // --- CSV Generation Function ---
-    /** Generate and download CSV files AND optionally graph images PER AREA. */
     async function generateAndDownloadCsv() {
         if (collectedData.length === 0) { showFeedback("No data to save.", true); return; }
 
         const selBaf = currentBaf, selRule = currentLogRule, selFc = currentFormClass;
-        const generateGraphsEnabled = currentGenerateGraphs === 'Yes'; // Check setting once
+        const generateGraphsEnabled = currentGenerateGraphs === 'Yes';
 
         console.log(`Generating outputs: BAF=${selBaf}, Rule=${selRule}, FC=${selFc}, Graphs=${generateGraphsEnabled}`);
-        showFeedback("Starting CSV/Graph generation...", false, 10000); // Longer initial feedback
+        showFeedback("Starting CSV/Graph generation...", false, 10000);
 
         try {
-            // --- Group data by AreaLetter ---
             const groupedData = collectedData.reduce((acc, entry) => {
-                const area = entry.areaLetter || 'Unknown'; // Default if missing
-                if (!acc[area]) {
-                    acc[area] = [];
-                }
+                const area = entry.areaLetter || 'Unknown';
+                if (!acc[area]) acc[area] = [];
                 acc[area].push(entry);
                 return acc;
             }, {});
 
             const sortedAreas = Object.keys(groupedData).sort();
-            if (sortedAreas.length === 0) {
-                 showFeedback("No areas found in data.", true);
-                 return;
-            }
+            if (sortedAreas.length === 0) { showFeedback("No areas found in data.", true); return; }
 
             const timestamp = new Date().toISOString().slice(0, 19).replace(/[-T:]/g, "");
             const projNameBase = projectNameInput?.value.trim().replace(/[^a-z0-9_\-]/gi, '_') || 'TimberTally';
-            const chartWidth = 800; // Desired width for generated graphs
-            const chartHeight = 500; // Desired height
+            const chartWidth = 800; 
+            const chartHeight = 500; 
 
             let areaCount = 0;
-            for (const areaLetter of sortedAreas) { // --- Start Area Loop ---
+            for (const areaLetter of sortedAreas) {
                 areaCount++;
                 const areaData = groupedData[areaLetter];
                 console.log(`--- Processing Area: ${areaLetter} (${areaData.length} entries) ---`);
                 showFeedback(`Generating for Area ${areaLetter} (${areaCount}/${sortedAreas.length})...`, false, 6000);
 
-                // --- Calculate data for the current area ---
-                let reportData = null;
-                let tallyData = null;
-                let plotStats = null;
+                let reportData = null, tallyData = null, plotStats = null;
+                try { reportData = calculateForestryReport(areaData, selBaf, selRule, selFc); } catch (e) { console.error(`Report calc error Area ${areaLetter}:`, e); }
+                try { tallyData = generateTallyData(areaData); } catch (e) { console.error(`Tally calc error Area ${areaLetter}:`, e); }
+                try { plotStats = calculatePlotStats(areaData, selBaf, selRule, selFc); } catch (e) { console.error(`Plot stats calc error Area ${areaLetter}:`, e); }
 
-                try { reportData = calculateForestryReport(areaData, selBaf, selRule, selFc); }
-                catch (e) { console.error(`Report calc error for Area ${areaLetter}:`, e); }
-
-                try { tallyData = generateTallyData(areaData); } // Pass areaData
-                catch (e) { console.error(`Tally calc error for Area ${areaLetter}:`, e); }
-
-                try { plotStats = calculatePlotStats(areaData, selBaf, selRule, selFc); } // Pass areaData
-                catch (e) { console.error(`Plot stats calc error for Area ${areaLetter}:`, e); }
-
-                // --- Logging Report Summary (helpful for debugging) ---
-                console.log(`--- Logging Data Before Graphing Area: ${areaLetter} ---`);
-                console.log(`Number of entries processed in this area's data subset: ${areaData.length}`);
-                if (reportData && reportData.summary && reportData.summary.numberOfPlots !== undefined) {
-                    console.log(`Report Summary (Area ${areaLetter}): Plots=${reportData.summary.numberOfPlots}, TPA=${reportData.summary.totalTreesPerAcre?.toFixed(1)}, BA/A=${reportData.summary.totalBaPerAcre?.toFixed(1)}, Vol/A=${reportData.summary.totalVolPerAcre?.toFixed(0)}`);
-                } else {
-                     console.log(`Report data calculation failed, incomplete, or resulted in zero plots for Area ${areaLetter}`);
-                }
-                console.log(`---------------------------------------------------`);
-
-                // --- Generate and Download Graphs (if enabled and data valid) ---
                 if (generateGraphsEnabled && reportData && reportData.summary && reportData.summary.numberOfPlots > 0) {
                     console.log(`>>> Generating graphs for Area ${areaLetter}...`);
                     const graphFileNameBase = `${projNameBase}_Area${areaLetter}_${timestamp}`;
-                    const graphDelay = 200; // Delay between graph downloads (ms)
+                    const graphDelay = 250; // Increased slightly
 
                     try {
-                        // Helper to create canvas and chart, then return data URL
                         const createChartAndGetDataUrl = async (chartType, generatorFn) => {
                             const tempCanvas = document.createElement('canvas');
                             tempCanvas.width = chartWidth;
                             tempCanvas.height = chartHeight;
-                            // Get context *before* passing to Chart.js if needed for background fill
-                            const tempCtx = tempCanvas.getContext('2d');
-                             if (!tempCtx) {
-                                console.error(`Failed to get context for ${chartType} chart (Area ${areaLetter})`);
-                                return null;
-                             }
-                             // Optional: Fill background if transparency is an issue in JPG
-                             tempCtx.fillStyle = '#FFFFFF'; // White background
-                             tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                            // Manual fillRect is removed as plugin handles background
 
                             const chartInstance = generatorFn(reportData, tempCanvas);
-                            if (!chartInstance) {
-                                console.error(`Failed to create ${chartType} chart instance for Area ${areaLetter}.`);
-                                return null;
-                            }
-                            // Wait for chart rendering *after* instance creation
-                            await new Promise(r => setTimeout(r, 150));
+                            if (!chartInstance) { console.error(`Failed to create ${chartType} chart instance for Area ${areaLetter}.`); return null; }
+                            
+                            await new Promise(resolve => setTimeout(resolve, 250)); // Allow plugin and chart to render
+
                             try {
-                                return tempCanvas.toDataURL('image/jpeg', 0.9);
-                            } catch (urlError) {
-                                 console.error(`Error getting data URL for ${chartType} chart (Area ${areaLetter}):`, urlError);
-                                 return null;
-                            }
+                                return tempCanvas.toDataURL('image/png'); // Output as PNG
+                            } catch (urlError) { console.error(`Error getting data URL for ${chartType} (Area ${areaLetter}):`, urlError); return null; }
                         };
 
-                        // --- Generate and Download each chart sequentially ---
                         const baDataUrl = await createChartAndGetDataUrl('BA', generateBaChart);
-                        if (baDataUrl) downloadDataUrlAsJpg(baDataUrl, `${graphFileNameBase}_BA_Dist.jpg`);
-                        await new Promise(r => setTimeout(r, graphDelay)); // Wait between downloads
+                        if (baDataUrl) downloadDataUrlAsJpg(baDataUrl, `${graphFileNameBase}_BA_Dist.png`);
+                        await new Promise(r => setTimeout(r, graphDelay));
 
                         const tpaDataUrl = await createChartAndGetDataUrl('TPA', generateTpaChart);
-                         if (tpaDataUrl) downloadDataUrlAsJpg(tpaDataUrl, `${graphFileNameBase}_TPA_Dist.jpg`);
+                        if (tpaDataUrl) downloadDataUrlAsJpg(tpaDataUrl, `${graphFileNameBase}_TPA_Dist.png`);
                         await new Promise(r => setTimeout(r, graphDelay));
 
                         const volSpecDataUrl = await createChartAndGetDataUrl('VolSpecies', generateVolSpeciesChart);
-                        if (volSpecDataUrl) downloadDataUrlAsJpg(volSpecDataUrl, `${graphFileNameBase}_Vol_Species.jpg`);
+                        if (volSpecDataUrl) downloadDataUrlAsJpg(volSpecDataUrl, `${graphFileNameBase}_Vol_Species.png`);
                         await new Promise(r => setTimeout(r, graphDelay));
 
                         const volSawDataUrl = await createChartAndGetDataUrl('VolSawtimber', generateVolSawtimberChart);
-                        if (volSawDataUrl) downloadDataUrlAsJpg(volSawDataUrl, `${graphFileNameBase}_Vol_Sawtimber.jpg`);
-                        await new Promise(r => setTimeout(r, graphDelay)); // Wait after last one too
+                        if (volSawDataUrl) downloadDataUrlAsJpg(volSawDataUrl, `${graphFileNameBase}_Vol_Sawtimber.png`);
+                        await new Promise(r => setTimeout(r, graphDelay));
 
                         console.log(`Graph download process completed for Area ${areaLetter}.`);
+                    } catch (graphError) { console.error(`Graph generation/download error Area ${areaLetter}:`, graphError); showFeedback(`Graph error Area ${areaLetter}.`, true, 4000); }
+                } else if (generateGraphsEnabled) { console.warn(`Graph generation skipped Area ${areaLetter}: No valid report data or zero plots.`); }
 
-                    } catch (graphError) {
-                        console.error(`Graph generation/download error for Area ${areaLetter}:`, graphError);
-                        showFeedback(`Graph error for Area ${areaLetter}. See console.`, true, 4000);
-                    }
-                } else if (generateGraphsEnabled) {
-                    console.warn(`Graph generation skipped for Area ${areaLetter}: No valid report data or zero plots.`);
-                }
-
-                // --- Generate CSV Sections for the current area ---
-                let rawCsv = "PlotNumber,Area,DBH,Species,Logs,Cut,Notes,Latitude,Longitude\n"; // Added Area column header
-                areaData.forEach(e => {
-                    if (!e) return;
-                    const n = `"${(e.notes || '').replace(/"/g, '""')}"`;
-                    const l = e.location || {};
-                    rawCsv += `${e.plotNumber ?? '?'},${e.areaLetter ?? '?'},${e.dbh ?? '?'},"${e.species ?? 'N/A'}",${e.logs ?? '?'},${e.cutStatus || 'No'},${n},${l.lat || ''},${l.lon || ''}\n`;
-                });
-
+                let rawCsv = "PlotNumber,Area,DBH,Species,Logs,Cut,Notes,Latitude,Longitude\n";
+                areaData.forEach(e => { if (!e) return; const n = `"${(e.notes || '').replace(/"/g, '""')}"`; const l = e.location || {}; rawCsv += `${e.plotNumber ?? '?'},${e.areaLetter ?? '?'},${e.dbh ?? '?'},"${e.species ?? 'N/A'}",${e.logs ?? '?'},${e.cutStatus || 'No'},${n},${l.lat || ''},${l.lon || ''}\n`; });
                 let tallyCsv = "\n\n--- TALLY DATA ---\nSpecies,DBH,Logs,Cut Status,Count\n";
-                 if (tallyData) {
-                   try { Object.keys(tallyData).sort().forEach(sp=>{ Object.keys(tallyData[sp]).sort((a,b)=>Number(a)-Number(b)).forEach(dbh=>{ Object.keys(tallyData[sp][dbh]).sort((a,b)=>{ if(a==='Cull')return 1; if(b==='Cull')return -1; const nA=parseFloat(a),nB=parseFloat(b); return isNaN(nA)?1:isNaN(nB)?-1:nA-nB; }).forEach(logs=>{ const c=tallyData[sp][dbh][logs]; const cut=c['Yes']||0, notCut=c['No']||0; if(cut>0) tallyCsv+=`"${sp}",${dbh},${logs},"Yes",${cut}\n`; if(notCut>0) tallyCsv+=`"${sp}",${dbh},${logs},"No",${notCut}\n`; }); }); }); }
-                   catch (e) { console.error(`Tally CSV Err Area ${areaLetter}:`, e); tallyCsv+="Error generating tally section.\n"; }
-                } else { tallyCsv += "Tally calculation failed for this area.\n"; }
-
+                if (tallyData) { try { Object.keys(tallyData).sort().forEach(sp=>{ Object.keys(tallyData[sp]).sort((a,b)=>Number(a)-Number(b)).forEach(dbh=>{ Object.keys(tallyData[sp][dbh]).sort((a,b)=>{if(a==='Cull')return 1;if(b==='Cull')return -1;const nA=parseFloat(a),nB=parseFloat(b);return isNaN(nA)?1:isNaN(nB)?-1:nA-nB;}).forEach(logs=>{const c=tallyData[sp][dbh][logs];const cut=c['Yes']||0,notCut=c['No']||0;if(cut>0)tallyCsv+=`"${sp}",${dbh},${logs},"Yes",${cut}\n`;if(notCut>0)tallyCsv+=`"${sp}",${dbh},${logs},"No",${notCut}\n`;});});});}catch(e){console.error(`Tally CSV Err Area ${areaLetter}:`,e);tallyCsv+="Error generating tally section.\n";}}else{tallyCsv+="Tally calculation failed.\n";}
                 let plotCsv = `\n\n--- PER-PLOT VOLUME & STATS (Rule:${selRule}${selRule==='Doyle'?' FC'+selFc:''}, BAF:${selBaf}) ---\n`;
-                if (plotStats && plotStats.numValidPlots > 0) {
-                    plotCsv += `Plot,Volume (BF/Acre)\n`;
-                    const plotsInArea = {}; areaData.forEach(e => { if(e?.plotNumber){ const pN=parseInt(e.plotNumber,10); if(!isNaN(pN)) plotsInArea[pN]=true;} }); const plotNsInArea = Object.keys(plotsInArea).map(Number).sort((a,b)=>a-b); const plotVolumeMap = {}; plotNsInArea.forEach((pN, index) => { if(plotStats.plotVolumes && plotStats.plotVolumes[index] !== undefined){ plotVolumeMap[pN] = plotStats.plotVolumes[index]; } else { console.warn(`Volume mapping issue for plot ${pN} in Area ${areaLetter}.`); plotVolumeMap[pN] = 0; } }); plotNsInArea.forEach(pN => { plotCsv += `${pN},${plotVolumeMap[pN]}\n`; });
-                    plotCsv += `\nNum Plots,${plotStats.numValidPlots}\n`; plotCsv += `Mean BF/Acre,${plotStats.meanV.toFixed(1)}\n`; plotCsv += `Variance,${plotStats.numValidPlots > 1 ? (plotStats.stdDevV * plotStats.stdDevV).toFixed(1) : 'N/A'}\n`; plotCsv += `Std Dev,${plotStats.numValidPlots > 1 ? plotStats.stdDevV.toFixed(1) : 'N/A'}\n`; plotCsv += `CV (%),${plotStats.numValidPlots > 1 ? plotStats.cvV.toFixed(1) : 'N/A'}\n`;
-                } else { plotCsv += `No plot data or insufficient plots for statistics in this area.\n`; }
-
-                let reportCsv = "";
-                if (reportData) {
-                   try { reportCsv = formatReportForCsv(reportData); }
-                   catch (e) { console.error(`Report CSV Formatting Err Area ${areaLetter}:`, e); reportCsv = "\n\n--- FORESTRY REPORT DATA ---\nError formatting report for this area.\n"; }
-                } else { reportCsv = "\n\n--- FORESTRY REPORT DATA ---\nReport calculation failed for this area.\n"; }
-
-
-                // --- Combine and Download CSV for the current area ---
-                const combined = rawCsv + tallyCsv + plotCsv + reportCsv;
-                const blob = new Blob([combined], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                const ruleP = selRule.substring(0,4);
-                const fcP = selRule==='Doyle'?`FC${selFc}`:'';
-                const bafP = `BAF${selBaf}`;
-                const fName = `${projNameBase}_Area${areaLetter}_${ruleP}${fcP}_${bafP}_${timestamp}.csv`; // Area-specific CSV filename
-
-                link.setAttribute("href", url);
-                link.setAttribute("download", fName);
-                link.style.visibility='hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-
-                console.log(`CSV download initiated for Area ${areaLetter}: ${fName}`);
-                // Wait a bit between *file downloads* (CSV or last graph)
-                await new Promise(r => setTimeout(r, 250)); // Wait before next area processing
-
-            } // --- End of Area Loop ---
-
-            // --- Final Feedback ---
-            const graphMsgPart = generateGraphsEnabled ? ' & Graphs' : '';
-            const areaMsgPart = sortedAreas.length > 1 ? ` for Areas: ${sortedAreas.join(', ')}` : (sortedAreas.length === 1 ? ` for Area ${sortedAreas[0]}` : '');
-            showFeedback(`CSV${graphMsgPart} Saved${areaMsgPart}`, false, 4000);
-
-        } catch (error) {
-            console.error("Overall CSV/Graph Generation Error:", error);
-            showFeedback(`Save Error: ${error.message || 'Unknown error'}. See console.`, true, 6000);
-        }
+                if(plotStats&&plotStats.numValidPlots>0){plotCsv+=`Plot,Volume (BF/Acre)\n`;const plotsInArea={};areaData.forEach(e=>{if(e?.plotNumber){const pN=parseInt(e.plotNumber,10);if(!isNaN(pN))plotsInArea[pN]=true;}});const plotNsInArea=Object.keys(plotsInArea).map(Number).sort((a,b)=>a-b);const plotVolumeMap={};plotNsInArea.forEach((pN,index)=>{if(plotStats.plotVolumes&&plotStats.plotVolumes[index]!==undefined){plotVolumeMap[pN]=plotStats.plotVolumes[index];}else{console.warn(`Volume mapping issue for plot ${pN} in Area ${areaLetter}.`);plotVolumeMap[pN]=0;}});plotNsInArea.forEach(pN=>{plotCsv+=`${pN},${plotVolumeMap[pN]}\n`;});plotCsv+=`\nNum Plots,${plotStats.numValidPlots}\nMean BF/Acre,${plotStats.meanV.toFixed(1)}\nVariance,${plotStats.numValidPlots>1?(plotStats.stdDevV*plotStats.stdDevV).toFixed(1):'N/A'}\nStd Dev,${plotStats.numValidPlots>1?plotStats.stdDevV.toFixed(1):'N/A'}\nCV (%),${plotStats.numValidPlots>1?plotStats.cvV.toFixed(1):'N/A'}\n`;}else{plotCsv+=`No plot data or insufficient plots for stats.\n`;}
+                let reportCsv = ""; if(reportData){try{reportCsv=formatReportForCsv(reportData);}catch(e){console.error(`Report CSV Format Err Area ${areaLetter}:`,e);reportCsv="\n\n--- FORESTRY REPORT DATA ---\nError formatting report.\n";}}else{reportCsv="\n\n--- FORESTRY REPORT DATA ---\nReport calculation failed.\n";}
+                const combined=rawCsv+tallyCsv+plotCsv+reportCsv;const blob=new Blob([combined],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const link=document.createElement("a");const ruleP=selRule.substring(0,4);const fcP=selRule==='Doyle'?`FC${selFc}`:'';const bafP=`BAF${selBaf}`;const fName=`${projNameBase}_Area${areaLetter}_${ruleP}${fcP}_${bafP}_${timestamp}.csv`;link.setAttribute("href",url);link.setAttribute("download",fName);link.style.visibility='hidden';document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(url);
+                console.log(`CSV download initiated Area ${areaLetter}: ${fName}`);
+                await new Promise(r => setTimeout(r, 250));
+            }
+            const graphMsgPart = generateGraphsEnabled?' & Graphs':'';const areaMsgPart = sortedAreas.length > 1?` for Areas: ${sortedAreas.join(', ')}`:(sortedAreas.length===1?` for Area ${sortedAreas[0]}`:'');showFeedback(`CSV${graphMsgPart} Saved${areaMsgPart}`,false,4000);
+        } catch (error) { console.error("Overall CSV/Graph Gen Error:", error); showFeedback(`Save Error: ${error.message || 'Unknown'}.`, true, 6000); }
     }
 
     // --- Event Handlers ---
-function handleSubmitEntry() {
+    function handleSubmitEntry() {
         try {
             if (!dbhSelect || !speciesSelect || !logsSelect || !cutCheckbox || !notesTextarea) return;
-            checkAndSetLogsForDbh(); // Run this before getting values if it can change Logs
-
-            // *** ADDED: Get current area letter ***
+            checkAndSetLogsForDbh();
             const currentLetter = areaLetters[currentAreaIndex];
-
-            // *** MODIFIED: Include areaLetter in the newEntry object ***
-            const newEntry = {
-                id: Date.now(),
-                plotNumber: currentPlotNumber,
-                areaLetter: currentLetter, // <-- Added this line
-                dbh: dbhSelect.value,
-                species: speciesSelect.value,
-                logs: logsSelect.value,
-                cutStatus: cutCheckbox.checked ? 'Yes' : 'No',
-                notes: notesTextarea.value.trim(),
-                location: currentLocation
-            };
-
+            const newEntry = { id: Date.now(), plotNumber: currentPlotNumber, areaLetter: currentLetter, dbh: dbhSelect.value, species: speciesSelect.value, logs: logsSelect.value, cutStatus: cutCheckbox.checked ? 'Yes' : 'No', notes: notesTextarea.value.trim(), location: currentLocation };
             if (!newEntry.species || !newEntry.dbh || !newEntry.logs) { showFeedback("Species, DBH, and Logs required.", true); return; }
-            collectedData.push(newEntry);
-            renderEntries(); // This will now trigger needed plots calculation
-            saveSessionData();
-            showFeedback("Entry Added!");
-
-            // Reset only non-persistent fields
-            cutCheckbox.checked = false;
-            notesTextarea.value = '';
-            currentLocation = null; // Clear location after submit
+            collectedData.push(newEntry); renderEntries(); saveSessionData(); showFeedback("Entry Added!");
+            cutCheckbox.checked = false; notesTextarea.value = ''; currentLocation = null;
             if(locationStatus) { locationStatus.textContent = 'Location not set'; locationStatus.style.color = '#555'; }
-            // Keep Species, DBH, Logs, Plot, Area selected for faster repeat entries
          } catch (error) { console.error("Submit Error:", error); showFeedback(`Submit Error: ${error.message}`, true, 5000); }
     }
     function handleGetLocation() { if (!locationStatus) return; if (!('geolocation' in navigator)) { locationStatus.textContent = 'Not Supported'; locationStatus.style.color = 'red'; return; } locationStatus.textContent = 'Fetching...'; locationStatus.style.color = '#555'; getLocationBtn.disabled = true; navigator.geolocation.getCurrentPosition( (pos) => { currentLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude }; const coords = `(${currentLocation.lat.toFixed(4)}, ${currentLocation.lon.toFixed(4)})`; locationStatus.textContent = `Set ${coords}`; locationStatus.style.color = 'green'; getLocationBtn.disabled = false; }, (err) => { currentLocation = null; let msg = 'Error: '; switch (err.code) { case 1: msg+='Denied'; break; case 2: msg+='Unavailable'; break; case 3: msg+='Timeout'; break; default: msg+='Unknown'; break; } locationStatus.textContent = msg; locationStatus.style.color = 'red'; getLocationBtn.disabled = false; console.error("Geolocation Error:", err); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 } ); }
@@ -810,28 +716,19 @@ function handleSubmitEntry() {
     if(dbhSelect) dbhSelect.addEventListener('change', checkAndSetLogsForDbh);
     if(viewTallyBtn) viewTallyBtn.addEventListener('click', handleViewTally);
     if(backToEntryBtn) backToEntryBtn.addEventListener('click', handleBackToEntry);
-    if(plotDecrementBtn) plotDecrementBtn.addEventListener('click', () => { if (currentPlotNumber > MIN_PLOT_NUMBER) { currentPlotNumber--; updatePlotDisplay(); } });
-    if(plotIncrementBtn) plotIncrementBtn.addEventListener('click', () => { if (currentPlotNumber < MAX_PLOT_NUMBER) { currentPlotNumber++; updatePlotDisplay(); } });
-    if(areaDecrementBtn) areaDecrementBtn.addEventListener('click', () => { if (currentAreaIndex > 0) { currentAreaIndex--; updateAreaDisplay(); calculateAndDisplayNeededPlots(); } });
-    if(areaIncrementBtn) areaIncrementBtn.addEventListener('click', () => { if (currentAreaIndex < areaLetters.length - 1) { currentAreaIndex++; updateAreaDisplay(); calculateAndDisplayNeededPlots(); } });
+    if(plotDecrementBtn) plotDecrementBtn.addEventListener('click', () => { if (currentPlotNumber > MIN_PLOT_NUMBER) { currentPlotNumber--; updatePlotDisplay(); saveSessionData(); } }); // Added saveSessionData
+    if(plotIncrementBtn) plotIncrementBtn.addEventListener('click', () => { if (currentPlotNumber < MAX_PLOT_NUMBER) { currentPlotNumber++; updatePlotDisplay(); saveSessionData(); } }); // Added saveSessionData
+    if(areaDecrementBtn) areaDecrementBtn.addEventListener('click', () => { if (currentAreaIndex > 0) { currentAreaIndex--; updateAreaDisplay(); calculateAndDisplayNeededPlots(); saveSessionData(); } }); // Added saveSessionData
+    if(areaIncrementBtn) areaIncrementBtn.addEventListener('click', () => { if (currentAreaIndex < areaLetters.length - 1) { currentAreaIndex++; updateAreaDisplay(); calculateAndDisplayNeededPlots(); saveSessionData(); } }); // Added saveSessionData
     if (toggleSettingsBtn) toggleSettingsBtn.addEventListener('click', () => { if(!settingsSection) return; const isHidden = settingsSection.hidden; settingsSection.hidden = !isHidden; toggleSettingsBtn.setAttribute('aria-expanded', String(isHidden)); toggleSettingsBtn.innerHTML = isHidden ? 'Hide Settings ▲' : 'Settings ⚙'; toggleSettingsBtn.title = isHidden ? 'Hide Settings' : 'Show Settings'; });
     if (bafSelect) bafSelect.addEventListener('change', (e) => { currentBaf = parseInt(e.target.value, 10); saveSettings(); showSettingsFeedback(`BAF set to ${currentBaf}`, false); calculateAndDisplayNeededPlots(); });
-    if (logRuleSelect) logRuleSelect.addEventListener('change', (e) => { currentLogRule = e.target.value; saveSettings(); showSettingsFeedback(`Rule: ${currentLogRule}`, false); checkAndSetLogsForDbh(); calculateAndDisplayNeededPlots(); });
+    if (logRuleSelect) logRuleSelect.addEventListener('change', (e) => { currentLogRule = e.target.value; saveSettings(); showSettingsFeedback(`Rule: ${currentLogRule}`, false); checkAndSetLogsForDbh(); calculateAndDisplayNeededPlots(); updateFormClassVisibility(); }); // Moved updateFormClassVisibility here
     if (formClassSelect) formClassSelect.addEventListener('change', (e) => { currentFormClass = parseInt(e.target.value, 10); saveSettings(); showSettingsFeedback(`Doyle FC: ${currentFormClass}`, false); calculateAndDisplayNeededPlots(); });
-    if (logRuleSelect) {
-        logRuleSelect.addEventListener('change', (e) => {
-            currentLogRule = e.target.value; // Existing line
-            saveSettings();                  // Existing line
-            showSettingsFeedback(`Rule: ${currentLogRule}`, false); // Existing line
-            checkAndSetLogsForDbh();         // Existing line
-            calculateAndDisplayNeededPlots(); // Existing line
-            updateFormClassVisibility();     // <-- ADD THIS LINE
-        });
-    }
+    // Removed redundant logRuleSelect listener block as it's combined above
     if (generateGraphsSelect) { generateGraphsSelect.addEventListener('change', (e) => { currentGenerateGraphs = e.target.value; saveSettings(); showSettingsFeedback(`Generate graphs set to ${currentGenerateGraphs}.`, false); if (saveCsvBtn) { saveCsvBtn.textContent = currentGenerateGraphs === 'Yes' ? 'Save Area CSV(s) & Graphs' : 'Save Area CSV(s)'; } }); if (saveCsvBtn) { saveCsvBtn.textContent = currentGenerateGraphs === 'Yes' ? 'Save Area CSV(s) & Graphs' : 'Save Area CSV(s)'; } }
     if (manualUpdateCheckBtn && updateCheckStatus && 'serviceWorker' in navigator) { manualUpdateCheckBtn.addEventListener('click', () => { if (updateStatusTimeout) clearTimeout(updateStatusTimeout); updateCheckStatus.textContent = 'Checking...'; manualUpdateCheckBtn.disabled = true; navigator.serviceWorker.ready.then(registration => registration.update()).then(reg => { if (!reg) { updateCheckStatus.textContent = 'Check failed (No SW?).'; updateStatusTimeout = setTimeout(() => { if(updateCheckStatus) updateCheckStatus.textContent = ''; }, 3000); return; } if (reg.installing) { updateCheckStatus.textContent = 'Update found, installing...'; console.log('[App] Update found via manual check (installing).'); } else if (reg.waiting) { updateCheckStatus.textContent = 'Update ready!'; console.log('[App] Update found via manual check (waiting).'); if (typeof newWorker === 'undefined' || !newWorker) { newWorker = reg.waiting; } if (typeof showUpdateBar === 'function') { showUpdateBar(); } else { console.error("showUpdateBar function not found"); } } else { updateCheckStatus.textContent = 'App is up-to-date.'; console.log('[App] No update found via manual check.'); updateStatusTimeout = setTimeout(() => { if(updateCheckStatus) updateCheckStatus.textContent = ''; }, 3000); } }).catch(err => { console.error('[App] Manual update check failed:', err); if(updateCheckStatus) updateCheckStatus.textContent = 'Check failed.'; updateStatusTimeout = setTimeout(() => { if(updateCheckStatus) updateCheckStatus.textContent = ''; }, 3000); }).finally(() => { if(manualUpdateCheckBtn) manualUpdateCheckBtn.disabled = false; }); }); } else if (!('serviceWorker' in navigator)) { if(manualUpdateCheckBtn) manualUpdateCheckBtn.disabled = true; if(updateCheckStatus) updateCheckStatus.textContent = 'Updates N/A'; }
     if (showPrivacyPolicyBtn) { showPrivacyPolicyBtn.addEventListener('click', () => { window.open(PRIVACY_POLICY_URL, '_blank', 'noopener,noreferrer'); }); } else { console.warn("Privacy Policy button element not found."); }
-	if (showReadmeBtn) { showReadmeBtn.addEventListener('click', () => { window.open(README_URL, '_blank', 'noopener,noreferrer'); }); } else { console.warn("Show README button element not found."); } 
+	if (showReadmeBtn) { showReadmeBtn.addEventListener('click', () => { window.open(README_URL, '_blank', 'noopener,noreferrer'); }); } else { console.warn("Show README button element not found."); }
     if(toggleSpeciesMgmtBtn) toggleSpeciesMgmtBtn.addEventListener('click', () => { if(!speciesManagementSection) return; const isHidden = speciesManagementSection.hidden; speciesManagementSection.hidden = !isHidden; toggleSpeciesMgmtBtn.setAttribute('aria-expanded', String(isHidden)); toggleSpeciesMgmtBtn.innerHTML = isHidden ? 'Hide Species Mgt ▲' : 'Show Species Mgt ▼'; });
     if(addSpeciesBtn) addSpeciesBtn.addEventListener('click', () => { if(!newSpeciesInput) return; const news = newSpeciesInput.value.trim(); if (!news) { showSpeciesFeedback("Enter species name.", true); return; } if (currentSpeciesList.some(s => s.toLowerCase() === news.toLowerCase())) { showSpeciesFeedback(`"${news}" already exists.`, true); return; } currentSpeciesList.push(news); populateSpeciesDropdowns(); saveSpeciesList(); newSpeciesInput.value = ''; showSpeciesFeedback(`"${news}" added.`); });
     if(removeSpeciesBtn) removeSpeciesBtn.addEventListener('click', () => { if(!removeSpeciesSelect) return; const opts = Array.from(removeSpeciesSelect.selectedOptions); if (opts.length === 0) { showSpeciesFeedback("Select species to remove.", true); return; } const toRemove = opts.map(o => o.value); if (!confirm(`Remove selected species: ${toRemove.join(', ')}?`)) return; currentSpeciesList = currentSpeciesList.filter(s => !toRemove.includes(s)); populateSpeciesDropdowns(); saveSpeciesList(); showSpeciesFeedback(`Removed: ${toRemove.join(', ')}.`); });
@@ -858,21 +755,23 @@ function handleSubmitEntry() {
         try {
             const updateNotificationElement = document.getElementById('updateNotification');
             if (updateNotificationElement) updateNotificationElement.style.display = 'none';
-            loadSettings(); // Load settings first
+            loadSettings();
             initializeSpeciesManagement();
             initializeProjectManagement();
             populateDbhOptions();
             populateLogsOptions();
-            checkAndSetLogsForDbh(); // Check logs based on loaded settings
-            loadAndPromptSessionData();
-            updatePlotDisplay();
-            updateAreaDisplay();
-            calculateAndDisplayNeededPlots();
-            updateFormClassVisibility(); // <-- ADD THIS LINE (sets initial visibility)
+            checkAndSetLogsForDbh();
+            loadAndPromptSessionData(); // Also calls renderEntries, updatePlotDisplay, updateAreaDisplay
+            // updatePlotDisplay(); // Already called by loadAndPromptSessionData
+            // updateAreaDisplay(); // Already called by loadAndPromptSessionData
+            // calculateAndDisplayNeededPlots(); // Already called by renderEntries
+            updateFormClassVisibility();
             console.log("TimberTally application initialization complete.");
         } catch(initError) {
             console.error("FATAL ERROR during initialization:", initError);
-            document.body.innerHTML = `<div style='padding:20px; color:red;'><h2>App Init Failed</h2><p>${initError.message}</p>Check console.</div>`;
+            if (document.body) { // Check if body exists before trying to modify it
+                document.body.innerHTML = `<div style='padding:20px; color:red;'><h2>App Init Failed</h2><p>${initError.message}</p>Check console.</div>`;
+            }
         }
     }
 
@@ -880,4 +779,4 @@ function handleSubmitEntry() {
 
 }); // --- End DOMContentLoaded ---
 
-// --- END OF CONDENSED script.js ---
+// --- END OF script.js ---
